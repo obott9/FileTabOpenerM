@@ -358,14 +358,42 @@ final class FinderTabController: ObservableObject {
             return result
         }
 
+        // ウィンドウサイズ設定
+        if let rect = windowRect {
+            logInfo("Setting window bounds: \(rect)")
+            setFinderBounds(rect)
+        }
+
+        var errors: [String] = []
+
+        // パスが1つなら新規ウィンドウで完了 → タブ操作不要
+        guard validPaths.count > 1 else {
+            logInfo("Single path — no tab operations needed")
+            let result: FinderTabResult = .success(tabCount: 1)
+            if !invalidPaths.isEmpty {
+                return .invalidPaths(invalid: invalidPaths, validResult: result)
+            }
+            return result
+        }
+
         // タブバーの存在確認、なければ AX API で表示を試みる
         if findNewTabButton(appRef) == nil {
             logInfo("Tab bar not visible, attempting to show it via AX menu")
             if showTabBar(appRef) {
+                // AX ツリー更新を待つ (showTabBar 後のアニメーション完了まで)
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+            // リトライ: AX ツリー更新が遅い場合に備えて最大3回
+            var found = false
+            for attempt in 1...3 {
+                if findNewTabButton(appRef) != nil {
+                    found = true
+                    break
+                }
+                logInfo("Waiting for tab bar AX update (attempt \(attempt)/3)")
                 try? await Task.sleep(nanoseconds: 300_000_000)
             }
-            // 再確認
-            if findNewTabButton(appRef) == nil {
+            if !found {
                 logError("Tab bar still not visible after show attempt")
                 let result: FinderTabResult = .noTabBar
                 if !invalidPaths.isEmpty {
@@ -373,14 +401,6 @@ final class FinderTabController: ObservableObject {
                 }
                 return result
             }
-        }
-
-        var errors: [String] = []
-
-        // ウィンドウサイズ設定
-        if let rect = windowRect {
-            logInfo("Setting window bounds: \(rect)")
-            setFinderBounds(rect)
         }
 
         // 2番目以降: 新規タブ + パス設定
