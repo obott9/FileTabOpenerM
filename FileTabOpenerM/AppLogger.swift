@@ -2,7 +2,7 @@
 // FileTabOpenerM
 //
 // アプリケーションログ管理
-// 保存先: ~/Library/Application Support/FileTabOpenerM/logs/app.log
+// 保存先: ~/Library/Logs/FileTabOpenerM/app.log
 
 import Foundation
 
@@ -28,12 +28,12 @@ final class AppLogger {
     }()
 
     private init() {
-        let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory, in: .userDomainMask
+        let libraryDir = FileManager.default.urls(
+            for: .libraryDirectory, in: .userDomainMask
         ).first!
-        let logDir = appSupport
+        let logDir = libraryDir
+            .appendingPathComponent("Logs")
             .appendingPathComponent("FileTabOpenerM")
-            .appendingPathComponent("logs")
         logURL = logDir.appendingPathComponent("app.log")
 
         // ログディレクトリ作成
