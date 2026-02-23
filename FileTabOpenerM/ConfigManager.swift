@@ -3,6 +3,7 @@
 //
 // JSON 設定ファイルの読み書き
 // 保存先: ~/Library/Application Support/FileTabOpenerM/config.json
+// フォーマット: Python版 (FileTabOpener) と互換
 
 import Combine
 import Foundation
@@ -14,6 +15,14 @@ final class ConfigManager: ObservableObject {
     private let configURL: URL
 
     static let shared = ConfigManager()
+
+    /// Python版と互換の日付フォーマット: "2026-02-14T11:02:23" (タイムゾーンなし)
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
 
     private init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
@@ -36,7 +45,20 @@ final class ConfigManager: ObservableObject {
             let data = try Data(contentsOf: configURL)
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
-            decoder.dateDecodingStrategy = .iso8601
+            decoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let string = try container.decode(String.self)
+                // Python版フォーマット (タイムゾーンなし)
+                if let date = Self.dateFormatter.date(from: string) {
+                    return date
+                }
+                // フォールバック: ISO 8601 (タイムゾーン付き)
+                if let date = ISO8601DateFormatter().date(from: string) {
+                    return date
+                }
+                throw DecodingError.dataCorruptedError(
+                    in: container, debugDescription: "Invalid date: \(string)")
+            }
             config = try decoder.decode(AppConfig.self, from: data)
             logInfo("Config loaded: \(config.tabGroups.count) groups, \(config.history.count) history entries")
         } catch {
@@ -51,7 +73,7 @@ final class ConfigManager: ObservableObject {
 
             let encoder = JSONEncoder()
             encoder.keyEncodingStrategy = .convertToSnakeCase
-            encoder.dateEncodingStrategy = .iso8601
+            encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(config)
             try data.write(to: configURL)
