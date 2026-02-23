@@ -118,7 +118,7 @@ struct ContentView: View {
         .overlay {
             if finderController.isOpening {
                 VStack {
-                    Text("タブを開いています...")
+                    Text(L("opening_tabs"))
                         .font(.title3)
                         .padding(20)
                         .background(.regularMaterial)
@@ -143,7 +143,7 @@ struct ContentView: View {
             .frame(width: 140)
 
             Spacer()
-            Text("タイムアウト").font(.caption)
+            Text(L("timeout")).font(.caption)
             Picker("", selection: $configManager.config.settings.timeout) {
                 ForEach([5, 10, 15, 30, 60], id: \.self) { val in
                     Text("\(val)").tag(val)
@@ -151,23 +151,25 @@ struct ContentView: View {
             }
             .pickerStyle(.menu)
             .frame(width: 60)
-            .onChange(of: configManager.config.settings.timeout) { _, _ in
+            .onChange(of: configManager.config.settings.timeout) { _, newVal in
+                logInfo("Timeout changed to \(newVal)s")
                 configManager.save()
             }
-            Text("秒").font(.caption)
+            Text(L("seconds")).font(.caption)
 
-            Text("🌐")
+            Text("\u{1F310}")
             Picker("", selection: $configManager.config.settings.language) {
                 Text("Auto").tag("auto")
                 Text("English").tag("en")
-                Text("日本語").tag("ja")
-                Text("한국어").tag("ko")
-                Text("简体中文").tag("zh_CN")
-                Text("繁體中文").tag("zh_TW")
+                Text("\u{65E5}\u{672C}\u{8A9E}").tag("ja")
+                Text("\u{D55C}\u{AD6D}\u{C5B4}").tag("ko")
+                Text("\u{7C21}\u{4F53}\u{4E2D}\u{6587}").tag("zh_CN")
+                Text("\u{7E41}\u{9AD4}\u{4E2D}\u{6587}").tag("zh_TW")
             }
             .pickerStyle(.menu)
             .frame(width: 100)
-            .onChange(of: configManager.config.settings.language) { _, _ in
+            .onChange(of: configManager.config.settings.language) { _, newVal in
+                logInfo("Language changed to \(newVal)")
                 configManager.save()
             }
         }
@@ -177,19 +179,19 @@ struct ContentView: View {
 
     private var historySection: some View {
         HStack {
-            Text("履歴:").font(.callout)
+            Text(L("history")).font(.callout)
 
-            TextField("パスを入力またはドロップ", text: $historyText)
+            TextField(L("enter_path_or_drop"), text: $historyText)
                 .textFieldStyle(.roundedBorder)
 
-            Button("▼") { showHistoryDropdown.toggle() }
+            Button("\u{25BC}") { showHistoryDropdown.toggle() }
                 .popover(isPresented: $showHistoryDropdown) {
                     historyDropdownContent
                 }
 
-            Button("Finderで開く") { openSingleFolder() }
-            Button("📌") { toggleHistoryPin() }.frame(width: 36)
-            Button("クリア") { clearHistory() }
+            Button(L("open_in_finder")) { openSingleFolder() }
+            Button("\u{1F4CC}") { toggleHistoryPin() }.frame(width: 36)
+            Button(L("clear")) { clearHistory() }
         }
     }
 
@@ -197,7 +199,7 @@ struct ContentView: View {
         let sorted = configManager.sortedHistory()
         return VStack(spacing: 0) {
             if sorted.isEmpty {
-                Text("履歴がありません")
+                Text(L("no_history"))
                     .foregroundStyle(.secondary)
                     .padding()
             } else {
@@ -209,7 +211,7 @@ struct ContentView: View {
                                 showHistoryDropdown = false
                             }) {
                                 HStack {
-                                    Text(entry.pinned ? "📌" : "   ")
+                                    Text(entry.pinned ? "\u{1F4CC}" : "   ")
                                         .frame(width: 24)
                                     Text(entry.path)
                                         .lineLimit(1)
@@ -258,15 +260,15 @@ struct ContentView: View {
 
     private var tabManagementBar: some View {
         HStack(spacing: 4) {
-            Button("追加") { addTabGroup() }
-            Button("削除") { deleteSelectedGroup() }
-            Button("名前変更") { renameSelectedGroup() }
-            Button("コピー") { copySelectedGroup() }
+            Button(L("add")) { addTabGroup() }
+            Button(L("delete")) { deleteSelectedGroup() }
+            Button(L("rename")) { renameSelectedGroup() }
+            Button(L("copy")) { copySelectedGroup() }
 
             Spacer().frame(width: 10)
 
-            Button("◀") { moveSelectedGroupLeft() }.frame(width: 30)
-            Button("▶") { moveSelectedGroupRight() }.frame(width: 30)
+            Button("\u{25C0}") { moveSelectedGroupLeft() }.frame(width: 30)
+            Button("\u{25B6}") { moveSelectedGroupRight() }.frame(width: 30)
 
             Spacer()
         }
@@ -330,7 +332,7 @@ struct ContentView: View {
                 .frame(width: 60)
                 .onSubmit { saveGeometry() }
 
-            Button("Finderから取得") { getFinderBounds() }
+            Button(L("get_from_finder")) { getFinderBounds() }
 
             Spacer()
         }
@@ -346,11 +348,11 @@ struct ContentView: View {
 
             // アクションボタン (右)
             VStack(spacing: 4) {
-                Button("▲ 上へ") { movePathUp() }.frame(width: 80)
-                Button("▼ 下へ") { movePathDown() }.frame(width: 80)
-                Button("+ 追加") { addPathFromEntry() }.frame(width: 80)
-                Button("- 削除") { removeSelectedPath() }.frame(width: 80)
-                Button("参照...") { browseFolder() }.frame(width: 80)
+                Button(L("move_up")) { movePathUp() }.frame(width: 80)
+                Button(L("move_down")) { movePathDown() }.frame(width: 80)
+                Button(L("add_path")) { addPathFromEntry() }.frame(width: 80)
+                Button(L("remove_path")) { removeSelectedPath() }.frame(width: 80)
+                Button(L("browse")) { browseFolder() }.frame(width: 80)
             }
         }
     }
@@ -384,7 +386,7 @@ struct ContentView: View {
     // MARK: - Path Entry
 
     private var pathEntrySection: some View {
-        TextField("フォルダパスを入力", text: $newPath)
+        TextField(L("enter_folder_path"), text: $newPath)
             .textFieldStyle(.roundedBorder)
             .onSubmit { addPathFromEntry() }
             .padding(.vertical, 2)
@@ -396,7 +398,7 @@ struct ContentView: View {
         Button(action: { openTabs() }) {
             HStack {
                 Image(systemName: "macwindow.badge.plus")
-                Text("タブで開く")
+                Text(L("open_as_tabs"))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
@@ -430,10 +432,10 @@ struct ContentView: View {
                     Text(group.name)
                         .tag(group.id)
                         .contextMenu {
-                            Button("名前変更") { renameSelectedGroup() }
-                            Button("コピー") { copySelectedGroup() }
+                            Button(L("rename")) { renameSelectedGroup() }
+                            Button(L("copy")) { copySelectedGroup() }
                             Divider()
-                            Button("削除", role: .destructive) { deleteSelectedGroup() }
+                            Button(L("delete"), role: .destructive) { deleteSelectedGroup() }
                         }
                 }
                 .onMove { from, to in
@@ -452,7 +454,7 @@ struct ContentView: View {
             Divider()
 
             HStack {
-                TextField("新規グループ名", text: $newGroupName)
+                TextField(L("new_group_name"), text: $newGroupName)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { addGroupFromTextField() }
 
@@ -470,7 +472,7 @@ struct ContentView: View {
             if let gi = selectedGroupIndex {
                 VStack(spacing: 0) {
                     // グループ名 (インライン編集)
-                    TextField("グループ名", text: $configManager.config.tabGroups[gi].name)
+                    TextField(L("new_group_name"), text: $configManager.config.tabGroups[gi].name)
                         .textFieldStyle(.roundedBorder)
                         .font(.headline)
                         .onChange(of: configManager.config.tabGroups[gi].name) { _, _ in
@@ -493,11 +495,11 @@ struct ContentView: View {
 
                     // パス入力 + 参照
                     HStack {
-                        TextField("フォルダパスを入力", text: $newPath)
+                        TextField(L("enter_folder_path"), text: $newPath)
                             .textFieldStyle(.roundedBorder)
                             .onSubmit { addPathFromEntry() }
 
-                        Button("追加") { addPathFromEntry() }
+                        Button(L("add")) { addPathFromEntry() }
                             .disabled(newPath.trimmingCharacters(in: .whitespaces).isEmpty)
 
                         Button(action: { browseFolder() }) {
@@ -519,7 +521,7 @@ struct ContentView: View {
                     Image(systemName: "sidebar.left")
                         .font(.system(size: 48))
                         .foregroundStyle(.tertiary)
-                    Text("タブグループを選択してください")
+                    Text(L("select_tab_group"))
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -537,6 +539,7 @@ struct ContentView: View {
     // MARK: - 初期化
 
     private func loadInitialState() {
+        logInfo("App started — language: \(Localization.shared.currentLanguage), timeout: \(configManager.config.settings.timeout)s")
         if configManager.config.tabGroups.isEmpty {
             configManager.addTabGroup(name: "Tab 1")
         }
@@ -548,7 +551,7 @@ struct ContentView: View {
         let name = newGroupName.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else { return }
         if configManager.config.tabGroups.contains(where: { $0.name == name }) {
-            showAlert(title: "重複", message: "「\(name)」は既に存在します。")
+            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(name))
             return
         }
         configManager.addTabGroup(name: name)
@@ -568,12 +571,12 @@ struct ContentView: View {
 
     private func addTabGroup() {
         guard let name = showInputDialog(
-            title: "タブ追加",
-            message: "新しいタブの名前を入力:",
+            title: L("add_tab"),
+            message: L("enter_new_tab_name"),
             defaultValue: "Tab \(configManager.config.tabGroups.count + 1)"
         ) else { return }
         if configManager.config.tabGroups.contains(where: { $0.name == name }) {
-            showAlert(title: "重複", message: "「\(name)」は既に存在します。")
+            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(name))
             return
         }
         configManager.addTabGroup(name: name)
@@ -586,8 +589,8 @@ struct ContentView: View {
               let index = selectedGroupIndex else { return }
         let name = configManager.config.tabGroups[index].name
         guard showConfirmDialog(
-            title: "削除確認",
-            message: "「\(name)」を削除しますか？"
+            title: L("delete_confirm"),
+            message: L("delete_confirm_msg").localized(name)
         ) else { return }
 
         let groups = configManager.config.tabGroups
@@ -609,15 +612,16 @@ struct ContentView: View {
         guard let index = selectedGroupIndex else { return }
         let oldName = configManager.config.tabGroups[index].name
         guard let newName = showInputDialog(
-            title: "名前変更",
-            message: "新しい名前を入力:",
+            title: L("rename_tab"),
+            message: L("enter_new_name"),
             defaultValue: oldName
         ) else { return }
         if newName == oldName { return }
         if configManager.config.tabGroups.contains(where: { $0.name == newName }) {
-            showAlert(title: "重複", message: "「\(newName)」は既に存在します。")
+            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(newName))
             return
         }
+        logInfo("Tab group renamed: \(oldName) -> \(newName)")
         configManager.config.tabGroups[index].name = newName
         configManager.save()
     }
@@ -651,6 +655,7 @@ struct ContentView: View {
         let path = newPath.trimmingCharacters(in: .whitespaces)
         guard !path.isEmpty, let gi = selectedGroupIndex else { return }
         let expanded = NSString(string: path).expandingTildeInPath
+        logInfo("Path added: \(expanded)")
         configManager.config.tabGroups[gi].paths.append(expanded)
         configManager.save()
         newPath = ""
@@ -660,6 +665,8 @@ struct ContentView: View {
         guard let gi = selectedGroupIndex,
               let pi = selectedPathIndex,
               configManager.config.tabGroups[gi].paths.indices.contains(pi) else { return }
+        let removed = configManager.config.tabGroups[gi].paths[pi]
+        logInfo("Path removed: \(removed)")
         configManager.config.tabGroups[gi].paths.remove(at: pi)
         configManager.save()
         selectedPathIndex = nil
@@ -687,9 +694,10 @@ struct ContentView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.message = "フォルダを選択してください"
+        panel.message = L("enter_folder_path")
         if panel.runModal() == .OK, let url = panel.urls.first {
             newPath = url.path
+            logInfo("Folder selected via browse: \(url.path)")
         }
     }
 
@@ -724,6 +732,7 @@ struct ContentView: View {
     }
 
     private func getFinderBounds() {
+        logInfo("Getting Finder window bounds")
         let script = """
         tell application "Finder" to get bounds of front Finder window
         """
@@ -731,7 +740,8 @@ struct ContentView: View {
         var error: NSDictionary?
         guard let result = appleScript?.executeAndReturnError(&error),
               result.numberOfItems == 4 else {
-            showAlert(title: "エラー", message: "Finderウィンドウが見つかりません")
+            logError("Failed to get Finder bounds: \(error ?? [:])")
+            showAlert(title: L("error"), message: L("no_finder_window"))
             return
         }
         let x1 = Int(result.atIndex(1)?.int32Value ?? 0)
@@ -742,6 +752,7 @@ struct ContentView: View {
         geomY = String(y1)
         geomW = String(x2 - x1)
         geomH = String(y2 - y1)
+        logInfo("Finder bounds: x=\(x1) y=\(y1) w=\(x2 - x1) h=\(y2 - y1)")
         saveGeometry()
     }
 
@@ -752,9 +763,11 @@ struct ContentView: View {
         guard !path.isEmpty else { return }
         let expanded = NSString(string: path).expandingTildeInPath
         guard FileManager.default.fileExists(atPath: expanded) else {
-            showAlert(title: "エラー", message: "パスが見つかりません: \(path)")
+            logWarning("Path not found: \(expanded)")
+            showAlert(title: L("error"), message: L("path_not_found").localized(path))
             return
         }
+        logInfo("Opening single folder: \(expanded)")
         configManager.addHistory(path: expanded)
         NSWorkspace.shared.open(URL(fileURLWithPath: expanded))
     }
@@ -767,12 +780,13 @@ struct ContentView: View {
             configManager.addHistory(path: expanded)
         }
         configManager.togglePin(path: expanded)
+        logInfo("History pin toggled: \(expanded)")
     }
 
     private func clearHistory() {
         guard showConfirmDialog(
-            title: "履歴クリア",
-            message: "履歴をクリアしますか？（ピン留めは保持）"
+            title: L("clear_history"),
+            message: L("clear_history_msg")
         ) else { return }
         configManager.clearHistory(keepPinned: true)
     }
@@ -783,6 +797,7 @@ struct ContentView: View {
         guard let gi = selectedGroupIndex else { return }
         let group = configManager.config.tabGroups[gi]
         saveGeometry()
+        logInfo("Opening tabs for group: \(group.name) (\(group.paths.count) paths)")
 
         Task {
             let result = await finderController.openFoldersAsTabs(
@@ -793,16 +808,18 @@ struct ContentView: View {
                 for path in group.paths {
                     configManager.addHistory(path: path)
                 }
-                // 成功時は静かに完了
                 _ = count
             case .partialSuccess(let opened, let failed, _):
-                showAlert(title: "警告", message: "\(opened) 個成功, \(failed) 個失敗")
+                showAlert(
+                    title: L("warning"),
+                    message: L("success_count").localized(opened, failed)
+                )
             case .noFinderWindow:
-                showAlert(title: "エラー", message: "Finderウィンドウが見つかりません")
+                showAlert(title: L("error"), message: L("no_finder_window"))
             case .noTabBar:
-                showAlert(title: "エラー", message: "タブバーが非表示です（表示→タブバーを表示）")
+                showAlert(title: L("error"), message: L("tab_bar_hidden"))
             case .accessibilityDenied:
-                showAlert(title: "エラー", message: "アクセシビリティ権限が必要です")
+                showAlert(title: L("error"), message: L("accessibility_required"))
                 FinderTabController.requestAccessibility()
             }
         }
@@ -814,8 +831,8 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "キャンセル")
+        alert.addButton(withTitle: L("ok"))
+        alert.addButton(withTitle: L("cancel"))
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.stringValue = defaultValue
         alert.accessoryView = field
@@ -829,8 +846,8 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: "はい")
-        alert.addButton(withTitle: "いいえ")
+        alert.addButton(withTitle: L("yes"))
+        alert.addButton(withTitle: L("no"))
         return alert.runModal() == .alertFirstButtonReturn
     }
 
@@ -838,7 +855,7 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: L("ok"))
         alert.runModal()
     }
 }

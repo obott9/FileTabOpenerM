@@ -29,15 +29,19 @@ final class ConfigManager: ObservableObject {
     // MARK: - Load / Save
 
     func load() {
-        guard FileManager.default.fileExists(atPath: configURL.path) else { return }
+        guard FileManager.default.fileExists(atPath: configURL.path) else {
+            logInfo("Config file not found, using defaults: \(configURL.path)")
+            return
+        }
         do {
             let data = try Data(contentsOf: configURL)
             let decoder = JSONDecoder()
             decoder.keyDecodingStrategy = .convertFromSnakeCase
             decoder.dateDecodingStrategy = .iso8601
             config = try decoder.decode(AppConfig.self, from: data)
+            logInfo("Config loaded: \(config.tabGroups.count) groups, \(config.history.count) history entries")
         } catch {
-            print("Config load error: \(error)")
+            logError("Config load error: \(error)")
         }
     }
 
@@ -52,8 +56,9 @@ final class ConfigManager: ObservableObject {
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(config)
             try data.write(to: configURL)
+            logInfo("Config saved")
         } catch {
-            print("Config save error: \(error)")
+            logError("Config save error: \(error)")
         }
     }
 
@@ -61,6 +66,7 @@ final class ConfigManager: ObservableObject {
 
     func addTabGroup(name: String) {
         config.tabGroups.append(TabGroup(name: name))
+        logInfo("Tab group added: \(name)")
         save()
     }
 
@@ -71,13 +77,16 @@ final class ConfigManager: ObservableObject {
     }
 
     func deleteTabGroup(id: UUID) {
+        let name = config.tabGroups.first(where: { $0.id == id })?.name ?? "?"
         config.tabGroups.removeAll { $0.id == id }
+        logInfo("Tab group deleted: \(name)")
         save()
     }
 
     func duplicateTabGroup(id: UUID) {
         guard let original = config.tabGroups.first(where: { $0.id == id }),
               let index = config.tabGroups.firstIndex(where: { $0.id == id }) else { return }
+        logInfo("Tab group duplicated: \(original.name)")
         var copy = TabGroup(name: nextCopyName(original.name), paths: original.paths)
         copy.windowX = original.windowX
         copy.windowY = original.windowY
@@ -114,8 +123,10 @@ final class ConfigManager: ObservableObject {
         if let index = config.history.firstIndex(where: { $0.path == path }) {
             config.history[index].lastUsed = Date()
             config.history[index].useCount += 1
+            logInfo("History updated: \(path) (count: \(config.history[index].useCount))")
         } else {
             config.history.append(HistoryEntry(path: path))
+            logInfo("History added: \(path)")
         }
         trimHistory()
         save()
@@ -129,11 +140,13 @@ final class ConfigManager: ObservableObject {
     }
 
     func clearHistory(keepPinned: Bool = true) {
+        let before = config.history.count
         if keepPinned {
             config.history.removeAll { !$0.pinned }
         } else {
             config.history.removeAll()
         }
+        logInfo("History cleared: \(before) -> \(config.history.count) entries (keepPinned: \(keepPinned))")
         save()
     }
 

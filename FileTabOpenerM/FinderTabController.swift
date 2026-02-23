@@ -142,70 +142,98 @@ final class FinderTabController: ObservableObject {
     /// 複数パスを Finder タブとして開く
     @MainActor
     func openFoldersAsTabs(_ paths: [String], windowRect: NSRect? = nil) async -> FinderTabResult {
+        logInfo("openFoldersAsTabs: \(paths.count) paths requested")
         guard !paths.isEmpty else { return .success(tabCount: 0) }
-        guard Self.isAccessibilityEnabled else { return .accessibilityDenied }
+        guard Self.isAccessibilityEnabled else {
+            logError("Accessibility permission denied")
+            return .accessibilityDenied
+        }
 
         isOpening = true
         defer { isOpening = false }
 
         // バリデーション
         let validPaths = paths.filter { FileManager.default.fileExists(atPath: $0) }
+        let invalidCount = paths.count - validPaths.count
+        if invalidCount > 0 {
+            logWarning("\(invalidCount) invalid paths filtered out")
+        }
         guard !validPaths.isEmpty else { return .success(tabCount: 0) }
 
-        guard let appRef = finderApp() else { return .noFinderWindow }
+        guard let appRef = finderApp() else {
+            logError("Finder app not found")
+            return .noFinderWindow
+        }
 
         // Finder をアクティブに
         NSRunningApplication.runningApplications(
             withBundleIdentifier: "com.apple.finder"
         ).first?.activate()
+        logInfo("Finder activated")
 
         // Finder の準備を待つ (変化検出ではなく初期化待ち)
         try? await Task.sleep(nanoseconds: 200_000_000)
 
-        guard frontWindow(appRef) != nil else { return .noFinderWindow }
+        guard frontWindow(appRef) != nil else {
+            logError("No Finder window found")
+            return .noFinderWindow
+        }
 
         // タブバーの存在確認
-        guard findNewTabButton(appRef) != nil else { return .noTabBar }
+        guard findNewTabButton(appRef) != nil else {
+            logError("Tab bar not visible (New Tab button not found)")
+            return .noTabBar
+        }
 
         var errors: [String] = []
 
         // 最初のパス: 既存タブに設定
+        logInfo("Setting first tab target: \(validPaths[0])")
         if !setFinderTarget(validPaths[0]) {
+            logError("Failed to set target: \(validPaths[0])")
             errors.append(validPaths[0])
         }
 
         // ウィンドウサイズ設定
         if let rect = windowRect {
+            logInfo("Setting window bounds: \(rect)")
             setFinderBounds(rect)
         }
 
         // 2番目以降: 新規タブ + パス設定
-        for path in validPaths.dropFirst() {
+        for (i, path) in validPaths.dropFirst().enumerated() {
+            logInfo("Opening tab \(i + 2)/\(validPaths.count): \(path)")
             guard let btn = findNewTabButton(appRef) else {
+                logError("New Tab button not found for: \(path)")
                 errors.append(path)
                 continue
             }
 
             let before = tabCount(appRef)
             guard axPress(btn) else {
+                logError("AXPress failed for: \(path)")
                 errors.append(path)
                 continue
             }
 
             if !waitForTabCountChange(appRef, from: before) {
+                logError("Tab count change timeout for: \(path)")
                 errors.append(path)
                 continue
             }
 
             if !setFinderTarget(path) {
+                logError("Failed to set target: \(path)")
                 errors.append(path)
             }
         }
 
         let opened = validPaths.count - errors.count
         if errors.isEmpty {
+            logInfo("All \(opened) tabs opened successfully")
             return .success(tabCount: opened)
         } else {
+            logWarning("\(opened) succeeded, \(errors.count) failed")
             return .partialSuccess(opened: opened, failed: errors.count, errors: errors)
         }
     }
