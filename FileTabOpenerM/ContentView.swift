@@ -536,6 +536,16 @@ struct ContentView: View {
         return configManager.config.tabGroups.firstIndex(where: { $0.id == id })
     }
 
+    /// パス文字列のサニタイズ: 空白トリム + 前後のクォート除去
+    private func sanitizePath(_ raw: String) -> String {
+        var s = raw.trimmingCharacters(in: .whitespaces)
+        if (s.hasPrefix("'") && s.hasSuffix("'"))
+            || (s.hasPrefix("\"") && s.hasSuffix("\"")) {
+            s = String(s.dropFirst().dropLast())
+        }
+        return s
+    }
+
     // MARK: - 初期化
 
     private func loadInitialState() {
@@ -660,7 +670,7 @@ struct ContentView: View {
     // MARK: - パス管理
 
     private func addPathFromEntry() {
-        let path = newPath.trimmingCharacters(in: .whitespaces)
+        let path = sanitizePath(newPath)
         guard !path.isEmpty, let gi = selectedGroupIndex else { return }
         let expanded = NSString(string: path).expandingTildeInPath
         logInfo("Path added: \(expanded)")
@@ -767,7 +777,7 @@ struct ContentView: View {
     // MARK: - 履歴
 
     private func openSingleFolder() {
-        let path = historyText.trimmingCharacters(in: .whitespaces)
+        let path = sanitizePath(historyText)
         guard !path.isEmpty else { return }
         let expanded = NSString(string: path).expandingTildeInPath
         guard FileManager.default.fileExists(atPath: expanded) else {
