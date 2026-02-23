@@ -336,27 +336,21 @@ final class FinderTabController: ObservableObject {
         // Finder の準備を待つ
         try? await Task.sleep(nanoseconds: 200_000_000)
 
-        var firstPathHandled = false
-
-        // ウィンドウがなければ新規作成 (最初のパスで)
-        if frontWindow(appRef) == nil {
-            logInfo("No Finder window found, creating new window with: \(validPaths[0])")
-            if createFinderWindow(validPaths[0]) {
-                firstPathHandled = true
-                try? await Task.sleep(nanoseconds: 300_000_000)
-            } else {
-                logError("Failed to create Finder window")
-                let result: FinderTabResult = .noFinderWindow
-                if !invalidPaths.isEmpty {
-                    return .invalidPaths(invalid: invalidPaths, validResult: result)
-                }
-                return result
+        // 常に新規 Finder ウィンドウを作成 (既存ウィンドウは流用しない)
+        logInfo("Creating new Finder window with: \(validPaths[0])")
+        if !createFinderWindow(validPaths[0]) {
+            logError("Failed to create Finder window")
+            let result: FinderTabResult = .noFinderWindow
+            if !invalidPaths.isEmpty {
+                return .invalidPaths(invalid: invalidPaths, validResult: result)
             }
+            return result
         }
+        try? await Task.sleep(nanoseconds: 300_000_000)
 
-        // ウィンドウの存在を再確認
+        // ウィンドウの存在を確認
         guard frontWindow(appRef) != nil else {
-            logError("No Finder window found after creation attempt")
+            logError("No Finder window found after creation")
             let result: FinderTabResult = .noFinderWindow
             if !invalidPaths.isEmpty {
                 return .invalidPaths(invalid: invalidPaths, validResult: result)
@@ -382,17 +376,6 @@ final class FinderTabController: ObservableObject {
         }
 
         var errors: [String] = []
-
-        // 最初のパス: 既存タブに設定 (新規ウィンドウで既に設定済みなら skip)
-        if !firstPathHandled {
-            logInfo("Setting first tab target: \(validPaths[0])")
-            if !setFinderTarget(validPaths[0]) {
-                logError("Failed to set target: \(validPaths[0])")
-                errors.append(validPaths[0])
-            }
-        } else {
-            logInfo("First path already set via new window creation")
-        }
 
         // ウィンドウサイズ設定
         if let rect = windowRect {
