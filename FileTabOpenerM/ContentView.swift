@@ -819,26 +819,44 @@ struct ContentView: View {
 
         Task {
             let result = await finderController.openFoldersAsTabs(
-                group.paths, windowRect: group.windowRect
+                group.paths, windowRect: group.windowRect,
+                timeout: TimeInterval(configManager.config.settings.timeout)
             )
-            switch result {
-            case .success(let count):
-                for path in group.paths {
-                    configManager.addHistory(path: path)
-                }
-                _ = count
-            case .partialSuccess(let opened, let failed, _):
-                showAlert(
-                    title: L("warning"),
-                    message: L("success_count").localized(opened, failed)
-                )
-            case .noFinderWindow:
-                showAlert(title: L("error"), message: L("no_finder_window"))
-            case .noTabBar:
-                showAlert(title: L("error"), message: L("tab_bar_hidden"))
-            case .accessibilityDenied:
-                showAccessibilityDialog()
+            handleTabResult(result, paths: group.paths)
+        }
+    }
+
+    /// FinderTabResult を処理して適切な UI フィードバックを表示
+    private func handleTabResult(_ result: FinderTabResult, paths: [String]) {
+        switch result {
+        case .success(let count):
+            for path in paths {
+                configManager.addHistory(path: path)
             }
+            _ = count
+        case .partialSuccess(let opened, let failed, _):
+            for path in paths {
+                configManager.addHistory(path: path)
+            }
+            showAlert(
+                title: L("warning"),
+                message: L("success_count").localized(opened, failed)
+            )
+        case .noFinderWindow:
+            showAlert(title: L("error"), message: L("no_finder_window"))
+        case .noTabBar:
+            showAlert(title: L("error"), message: L("tab_bar_hidden"))
+        case .accessibilityDenied:
+            showAccessibilityDialog()
+        case .invalidPaths(let invalid, let validResult):
+            // 無効パスを警告表示
+            let invalidList = invalid.joined(separator: "\n")
+            showAlert(
+                title: L("warning"),
+                message: L("invalid_paths_msg").localized(String(invalid.count)) + "\n\n" + invalidList
+            )
+            // 有効パス分の結果も処理
+            handleTabResult(validResult, paths: paths)
         }
     }
 

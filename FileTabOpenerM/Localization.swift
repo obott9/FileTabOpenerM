@@ -111,6 +111,7 @@ final class Localization {
             "tab_bar_hidden": "Tab bar is hidden (View \u{2192} Show Tab Bar)",
             "accessibility_required": "Accessibility permission is required",
             "success_count": "%d succeeded, %d failed",
+            "invalid_paths_msg": "%@ path(s) not found:",
 
             // Accessibility dialog
             "accessibility_dialog_title": "Accessibility Permission Required",
@@ -183,6 +184,7 @@ final class Localization {
             "tab_bar_hidden": "タブバーが非表示です（表示→タブバーを表示）",
             "accessibility_required": "アクセシビリティ権限が必要です",
             "success_count": "%d 個成功, %d 個失敗",
+            "invalid_paths_msg": "%@ 件のパスが見つかりません:",
 
             // Accessibility dialog
             "accessibility_dialog_title": "アクセシビリティ権限が必要です",
@@ -255,6 +257,7 @@ final class Localization {
             "tab_bar_hidden": "탭 바가 숨겨져 있습니다 (보기 \u{2192} 탭 바 보기)",
             "accessibility_required": "접근성 권한이 필요합니다",
             "success_count": "%d개 성공, %d개 실패",
+            "invalid_paths_msg": "%@개의 경로를 찾을 수 없습니다:",
 
             // Accessibility dialog
             "accessibility_dialog_title": "접근성 권한이 필요합니다",
@@ -327,6 +330,7 @@ final class Localization {
             "tab_bar_hidden": "分頁列已隱藏（顯示 \u{2192} 顯示分頁列）",
             "accessibility_required": "需要輔助使用權限",
             "success_count": "%d 個成功, %d 個失敗",
+            "invalid_paths_msg": "找不到 %@ 個路徑:",
 
             // Accessibility dialog
             "accessibility_dialog_title": "需要輔助使用權限",
@@ -399,6 +403,7 @@ final class Localization {
             "tab_bar_hidden": "标签栏已隐藏（显示 \u{2192} 显示标签栏）",
             "accessibility_required": "需要辅助功能权限",
             "success_count": "%d 个成功, %d 个失败",
+            "invalid_paths_msg": "找不到 %@ 个路径:",
 
             // Accessibility dialog
             "accessibility_dialog_title": "需要辅助功能权限",

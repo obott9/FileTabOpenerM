@@ -2,9 +2,10 @@
 // FileTabOpenerM
 //
 // AXUIElement + AppleScript ハイブリッドで Finder タブを制御する
+// ⭐ 設計意図: System Events keystroke を排除し、AX API で直接操作
 
 import AppKit
-import ApplicationServices
+@preconcurrency import ApplicationServices
 import Combine
 
 /// Finder タブ操作の結果
@@ -14,6 +15,8 @@ enum FinderTabResult {
     case noFinderWindow
     case noTabBar
     case accessibilityDenied
+    /// 無効パスあり (invalid: 無効パスリスト, validResult: 有効分の結果)
+    indirect case invalidPaths(invalid: [String], validResult: FinderTabResult)
 }
 
 /// AXUIElement + AppleScript ハイブリッドで Finder タブを制御
@@ -73,11 +76,36 @@ final class FinderTabController: ObservableObject {
         (axValue(appRef, kAXWindowsAttribute) as? [AXUIElement])?.first
     }
 
+    /// 「新規タブ」ボタンを多言語対応で探索
+    /// AX description は OS 言語に依存するため、主要言語すべてを網羅
+    private static let newTabDescriptions = [
+        "New Tab",           // en
+        "新規タブ",           // ja
+        "새로운 탭",          // ko
+        "新增標籤頁",         // zh_TW
+        "新建标签页",         // zh_CN
+        "Nouvel onglet",     // fr
+        "Neuer Tab",         // de
+        "Nueva pestaña",     // es
+        "Novo separador",    // pt
+    ]
+
     private func findNewTabButton(_ appRef: AXUIElement) -> AXUIElement? {
         guard let win = frontWindow(appRef),
               let tg = findElement(win, role: "AXTabGroup") else { return nil }
-        return findElement(tg, role: "AXButton", description: "新規タブ")
-            ?? findElement(tg, role: "AXButton", description: "New Tab")
+        for desc in Self.newTabDescriptions {
+            if let btn = findElement(tg, role: "AXButton", description: desc) {
+                return btn
+            }
+        }
+        // フォールバック: description に依存しない探索
+        // TabGroup 内の最後の AXButton (通常「新規タブ」ボタン) を試す
+        let buttons = axChildren(tg).filter { axString($0, kAXRoleAttribute) == "AXButton" }
+        if let lastButton = buttons.last {
+            logInfo("New Tab button found via fallback (last button in TabGroup)")
+            return lastButton
+        }
+        return nil
     }
 
     private func tabCount(_ appRef: AXUIElement) -> Int {
@@ -86,13 +114,53 @@ final class FinderTabController: ObservableObject {
         return axChildren(tg).filter { axString($0, kAXSubroleAttribute) == "AXTabButton" }.count
     }
 
-    /// タブ数変化を検出 (20ms ポーリング, タイムアウト5秒)
-    private func waitForTabCountChange(_ appRef: AXUIElement, from expected: Int,
-                                        timeout: TimeInterval = 5.0) -> Bool {
+    /// タブ数変化を検出 (20ms ポーリング)
+    /// ⚠️ 呼び出し元は nonisolated context で実行すること (UI ブロック防止)
+    private nonisolated func waitForTabCountChange(
+        _ appRef: AXUIElement, from expected: Int, timeout: TimeInterval
+    ) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            if tabCount(appRef) != expected {
-                return true
+            // AX API はどのスレッドからでも呼べる
+            var value: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &value) == .success,
+                  let windows = value as? [AXUIElement],
+                  let win = windows.first else { continue }
+
+            // TabGroup を探す
+            var tgRef: AXUIElement?
+            func findTG(_ element: AXUIElement) {
+                var roleVal: CFTypeRef?
+                if AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleVal) == .success,
+                   let role = roleVal as? String, role == "AXTabGroup" {
+                    tgRef = element
+                    return
+                }
+                var childrenVal: CFTypeRef?
+                if AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenVal) == .success,
+                   let children = childrenVal as? [AXUIElement] {
+                    for child in children {
+                        if tgRef != nil { return }
+                        findTG(child)
+                    }
+                }
+            }
+            findTG(win)
+
+            if let tg = tgRef {
+                var childrenVal: CFTypeRef?
+                if AXUIElementCopyAttributeValue(tg, kAXChildrenAttribute as CFString, &childrenVal) == .success,
+                   let children = childrenVal as? [AXUIElement] {
+                    var count = 0
+                    for child in children {
+                        var subVal: CFTypeRef?
+                        if AXUIElementCopyAttributeValue(child, kAXSubroleAttribute as CFString, &subVal) == .success,
+                           let sub = subVal as? String, sub == "AXTabButton" {
+                            count += 1
+                        }
+                    }
+                    if count != expected { return true }
+                }
             }
             usleep(20_000)
         }
@@ -146,24 +214,59 @@ final class FinderTabController: ObservableObject {
         return true
     }
 
-    /// タブバーを表示 (⇧⌘T)
-    private func showTabBar() -> Bool {
-        let script = """
-        tell application "System Events"
-            tell process "Finder"
-                keystroke "t" using {command down, shift down}
-            end tell
-        end tell
-        """
-        let appleScript = NSAppleScript(source: script)
-        var error: NSDictionary?
-        appleScript?.executeAndReturnError(&error)
-        if let error = error {
-            logError("Failed to show tab bar: \(error)")
+    /// タブバーを表示 — AX API でメニュー項目を操作 (System Events 不要)
+    private func showTabBar(_ appRef: AXUIElement) -> Bool {
+        // Finder のメニューバーから「表示」→「タブバーを表示」を AX API で実行
+        guard let menuBarRef = axValue(appRef, kAXMenuBarAttribute) else {
+            logError("Cannot access Finder menu bar")
             return false
         }
-        logInfo("Tab bar show command sent")
-        return true
+        let menuBar = menuBarRef as! AXUIElement
+
+        let menuItems = axChildren(menuBar)
+        // 「表示」メニューを探す (通常4番目: Finder, File, Edit, View)
+        // 多言語対応: 位置ベースで探す (3番目 = index 3 が View メニュー)
+        let viewMenuCandidates: [AXUIElement]
+        if menuItems.count > 3 {
+            viewMenuCandidates = [menuItems[3]] + menuItems.dropFirst(4)
+        } else {
+            viewMenuCandidates = Array(menuItems)
+        }
+
+        for menuItem in viewMenuCandidates {
+            // メニューを開く
+            guard axPress(menuItem) else { continue }
+            usleep(100_000) // メニュー展開待ち
+
+            // サブメニュー内で「タブバーを表示」/「Show Tab Bar」を探す
+            let tabBarDescriptions = [
+                "Show Tab Bar", "Hide Tab Bar",
+                "タブバーを表示", "タブバーを非表示",
+                "탭 막대 보기", "탭 막대 가리기",
+                "顯示標籤列", "隱藏標籤列",
+                "显示标签栏", "隐藏标签栏",
+            ]
+
+            for child in axChildren(menuItem) {
+                for subItem in axChildren(child) {
+                    let title = axString(subItem, kAXTitleAttribute) ?? ""
+                    for desc in tabBarDescriptions {
+                        if title.contains(desc) {
+                            if axPress(subItem) {
+                                logInfo("Tab bar toggled via AX menu: \(title)")
+                                return true
+                            }
+                        }
+                    }
+                }
+            }
+
+            // このメニューに見つからなかった場合、閉じるために Escape
+            _ = axPress(menuItem) // メニューを閉じる
+        }
+
+        logError("Tab bar menu item not found via AX")
+        return false
     }
 
     // MARK: - 公開 API
@@ -181,7 +284,8 @@ final class FinderTabController: ObservableObject {
 
     /// 複数パスを Finder タブとして開く
     @MainActor
-    func openFoldersAsTabs(_ paths: [String], windowRect: NSRect? = nil) async -> FinderTabResult {
+    func openFoldersAsTabs(_ paths: [String], windowRect: NSRect? = nil,
+                           timeout: TimeInterval = 5.0) async -> FinderTabResult {
         logInfo("openFoldersAsTabs: \(paths.count) paths requested")
         guard !paths.isEmpty else { return .success(tabCount: 0) }
         guard Self.isAccessibilityEnabled else {
@@ -192,13 +296,31 @@ final class FinderTabController: ObservableObject {
         isOpening = true
         defer { isOpening = false }
 
-        // バリデーション
-        let validPaths = paths.filter { FileManager.default.fileExists(atPath: $0) }
-        let invalidCount = paths.count - validPaths.count
-        if invalidCount > 0 {
-            logWarning("\(invalidCount) invalid paths filtered out")
+        // パス重複除去 (順序維持)
+        let deduplicated = Array(NSOrderedSet(array: paths)) as! [String]
+        if deduplicated.count < paths.count {
+            logInfo("\(paths.count - deduplicated.count) duplicate paths removed")
         }
-        guard !validPaths.isEmpty else { return .success(tabCount: 0) }
+
+        // バリデーション (有効/無効を分離)
+        var validPaths: [String] = []
+        var invalidPaths: [String] = []
+        for path in deduplicated {
+            if FileManager.default.fileExists(atPath: path) {
+                validPaths.append(path)
+            } else {
+                invalidPaths.append(path)
+            }
+        }
+        if !invalidPaths.isEmpty {
+            logWarning("\(invalidPaths.count) invalid paths: \(invalidPaths)")
+        }
+        guard !validPaths.isEmpty else {
+            if !invalidPaths.isEmpty {
+                return .invalidPaths(invalid: invalidPaths, validResult: .success(tabCount: 0))
+            }
+            return .success(tabCount: 0)
+        }
 
         guard let appRef = finderApp() else {
             logError("Finder app not found")
@@ -211,7 +333,7 @@ final class FinderTabController: ObservableObject {
         ).first?.activate()
         logInfo("Finder activated")
 
-        // Finder の準備を待つ (変化検出ではなく初期化待ち)
+        // Finder の準備を待つ
         try? await Task.sleep(nanoseconds: 200_000_000)
 
         var firstPathHandled = false
@@ -224,26 +346,38 @@ final class FinderTabController: ObservableObject {
                 try? await Task.sleep(nanoseconds: 300_000_000)
             } else {
                 logError("Failed to create Finder window")
-                return .noFinderWindow
+                let result: FinderTabResult = .noFinderWindow
+                if !invalidPaths.isEmpty {
+                    return .invalidPaths(invalid: invalidPaths, validResult: result)
+                }
+                return result
             }
         }
 
         // ウィンドウの存在を再確認
         guard frontWindow(appRef) != nil else {
             logError("No Finder window found after creation attempt")
-            return .noFinderWindow
+            let result: FinderTabResult = .noFinderWindow
+            if !invalidPaths.isEmpty {
+                return .invalidPaths(invalid: invalidPaths, validResult: result)
+            }
+            return result
         }
 
-        // タブバーの存在確認、なければ表示を試みる
+        // タブバーの存在確認、なければ AX API で表示を試みる
         if findNewTabButton(appRef) == nil {
-            logInfo("Tab bar not visible, attempting to show it (Shift+Cmd+T)")
-            if showTabBar() {
+            logInfo("Tab bar not visible, attempting to show it via AX menu")
+            if showTabBar(appRef) {
                 try? await Task.sleep(nanoseconds: 300_000_000)
             }
             // 再確認
             if findNewTabButton(appRef) == nil {
                 logError("Tab bar still not visible after show attempt")
-                return .noTabBar
+                let result: FinderTabResult = .noTabBar
+                if !invalidPaths.isEmpty {
+                    return .invalidPaths(invalid: invalidPaths, validResult: result)
+                }
+                return result
             }
         }
 
@@ -267,6 +401,7 @@ final class FinderTabController: ObservableObject {
         }
 
         // 2番目以降: 新規タブ + パス設定
+        let tabTimeout = timeout
         for (i, path) in validPaths.dropFirst().enumerated() {
             logInfo("Opening tab \(i + 2)/\(validPaths.count): \(path)")
             guard let btn = findNewTabButton(appRef) else {
@@ -282,7 +417,15 @@ final class FinderTabController: ObservableObject {
                 continue
             }
 
-            if !waitForTabCountChange(appRef, from: before) {
+            // UI ブロック回避: バックグラウンドでポーリング
+            let changed = await withCheckedContinuation { continuation in
+                DispatchQueue.global(qos: .userInteractive).async {
+                    let result = self.waitForTabCountChange(appRef, from: before, timeout: tabTimeout)
+                    continuation.resume(returning: result)
+                }
+            }
+
+            if !changed {
                 logError("Tab count change timeout for: \(path)")
                 errors.append(path)
                 continue
@@ -294,13 +437,34 @@ final class FinderTabController: ObservableObject {
             }
         }
 
+        // フォールバック: 失敗したパスを個別ウィンドウで開く
+        if !errors.isEmpty {
+            logInfo("Fallback: opening \(errors.count) failed paths as separate windows")
+            var fallbackRecovered = 0
+            for path in errors {
+                if createFinderWindow(path) {
+                    fallbackRecovered += 1
+                    try? await Task.sleep(nanoseconds: 200_000_000)
+                }
+            }
+            if fallbackRecovered > 0 {
+                logInfo("Fallback recovered \(fallbackRecovered)/\(errors.count) paths as separate windows")
+            }
+        }
+
         let opened = validPaths.count - errors.count
+        let result: FinderTabResult
         if errors.isEmpty {
             logInfo("All \(opened) tabs opened successfully")
-            return .success(tabCount: opened)
+            result = .success(tabCount: opened)
         } else {
-            logWarning("\(opened) succeeded, \(errors.count) failed")
-            return .partialSuccess(opened: opened, failed: errors.count, errors: errors)
+            logWarning("\(opened) succeeded, \(errors.count) failed (fallback attempted)")
+            result = .partialSuccess(opened: opened, failed: errors.count, errors: errors)
         }
+
+        if !invalidPaths.isEmpty {
+            return .invalidPaths(invalid: invalidPaths, validResult: result)
+        }
+        return result
     }
 }
