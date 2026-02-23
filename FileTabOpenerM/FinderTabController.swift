@@ -108,6 +108,16 @@ final class FinderTabController: ObservableObject {
         return nil
     }
 
+    /// 条件が true になるまで 50ms 間隔でポーリング (async、UI ブロックなし)
+    private func pollUntil(timeout: TimeInterval, _ condition: () -> Bool) async -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if condition() { return true }
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
+        return false
+    }
+
     private func tabCount(_ appRef: AXUIElement) -> Int {
         guard let win = frontWindow(appRef),
               let tg = findElement(win, role: "AXTabGroup") else { return 0 }
@@ -333,9 +343,6 @@ final class FinderTabController: ObservableObject {
         ).first?.activate()
         logInfo("Finder activated")
 
-        // Finder の準備を待つ
-        try? await Task.sleep(nanoseconds: 200_000_000)
-
         // 常に新規 Finder ウィンドウを作成 (既存ウィンドウは流用しない)
         logInfo("Creating new Finder window with: \(validPaths[0])")
         if !createFinderWindow(validPaths[0]) {
@@ -346,10 +353,10 @@ final class FinderTabController: ObservableObject {
             }
             return result
         }
-        try? await Task.sleep(nanoseconds: 300_000_000)
 
-        // ウィンドウの存在を確認
-        guard frontWindow(appRef) != nil else {
+        // ウィンドウ出現をポーリング (固定スリープではなく条件駆動)
+        let windowReady = await pollUntil(timeout: 3.0, { self.frontWindow(appRef) != nil })
+        if !windowReady {
             logError("No Finder window found after creation")
             let result: FinderTabResult = .noFinderWindow
             if !invalidPaths.isEmpty {
@@ -379,21 +386,11 @@ final class FinderTabController: ObservableObject {
         // タブバーの存在確認、なければ AX API で表示を試みる
         if findNewTabButton(appRef) == nil {
             logInfo("Tab bar not visible, attempting to show it via AX menu")
-            if showTabBar(appRef) {
-                // AX ツリー更新を待つ (showTabBar 後のアニメーション完了まで)
-                try? await Task.sleep(nanoseconds: 500_000_000)
-            }
-            // リトライ: AX ツリー更新が遅い場合に備えて最大3回
-            var found = false
-            for attempt in 1...3 {
-                if findNewTabButton(appRef) != nil {
-                    found = true
-                    break
-                }
-                logInfo("Waiting for tab bar AX update (attempt \(attempt)/3)")
-                try? await Task.sleep(nanoseconds: 300_000_000)
-            }
-            if !found {
+            _ = showTabBar(appRef)
+
+            // New Tab ボタン出現をポーリング
+            let tabBarReady = await pollUntil(timeout: 3.0, { self.findNewTabButton(appRef) != nil })
+            if !tabBarReady {
                 logError("Tab bar still not visible after show attempt")
                 let result: FinderTabResult = .noTabBar
                 if !invalidPaths.isEmpty {
