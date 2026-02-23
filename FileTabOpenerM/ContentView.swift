@@ -74,10 +74,12 @@ struct ContentView: View {
     @StateObject private var configManager = ConfigManager.shared
     @StateObject private var finderController = FinderTabController()
 
+    @AppStorage("useModernLayout") private var useModernLayout = false
     @State private var selectedGroupID: UUID?
     @State private var historyText = ""
     @State private var showHistoryDropdown = false
     @State private var newPath = ""
+    @State private var newGroupName = ""
     @State private var selectedPathIndex: Int?
 
     // ジオメトリ編集用
@@ -101,10 +103,16 @@ struct ContentView: View {
 
             Divider().padding(.horizontal, 10).padding(.vertical, 5)
 
-            // --- Tab group section (残りを埋める) ---
-            tabGroupSection
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
+            // --- Tab group section ---
+            if useModernLayout {
+                modernTabGroupSection
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+            } else {
+                classicTabGroupSection
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+            }
         }
         .frame(minWidth: 600, minHeight: 400)
         .overlay {
@@ -127,6 +135,13 @@ struct ContentView: View {
 
     private var settingsBar: some View {
         HStack {
+            Picker("", selection: $useModernLayout) {
+                Text("Classic").tag(false)
+                Text("Modern").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 140)
+
             Spacer()
             Text("タイムアウト").font(.caption)
             Picker("", selection: $configManager.config.settings.timeout) {
@@ -215,9 +230,9 @@ struct ContentView: View {
         .frame(width: 400, height: min(CGFloat(max(sorted.count, 1)) * 28, 280))
     }
 
-    // MARK: - Tab Group Section
+    // MARK: - Classic Tab Group Section (Python版準拠)
 
-    private var tabGroupSection: some View {
+    private var classicTabGroupSection: some View {
         VStack(spacing: 5) {
             // タブ管理バー
             tabManagementBar
@@ -394,6 +409,124 @@ struct ContentView: View {
         )
     }
 
+    // MARK: - Modern Tab Group Section (サイドバー方式)
+
+    private var modernTabGroupSection: some View {
+        HSplitView {
+            // 左: タブグループ一覧
+            modernSidebar
+                .frame(minWidth: 160, maxWidth: 240)
+
+            // 右: 選択中グループの詳細
+            modernDetail
+                .frame(minWidth: 350)
+        }
+    }
+
+    private var modernSidebar: some View {
+        VStack(spacing: 0) {
+            List(selection: $selectedGroupID) {
+                ForEach(configManager.config.tabGroups) { group in
+                    Text(group.name)
+                        .tag(group.id)
+                        .contextMenu {
+                            Button("名前変更") { renameSelectedGroup() }
+                            Button("コピー") { copySelectedGroup() }
+                            Divider()
+                            Button("削除", role: .destructive) { deleteSelectedGroup() }
+                        }
+                }
+                .onMove { from, to in
+                    configManager.config.tabGroups.move(fromOffsets: from, toOffset: to)
+                    configManager.save()
+                }
+            }
+            .listStyle(.sidebar)
+            .onChange(of: selectedGroupID) { _, newID in
+                if newID != nil {
+                    selectedPathIndex = nil
+                    loadGeometry()
+                }
+            }
+
+            Divider()
+
+            HStack {
+                TextField("新規グループ名", text: $newGroupName)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit { addGroupFromTextField() }
+
+                Button(action: addGroupFromTextField) {
+                    Image(systemName: "plus")
+                }
+                .disabled(newGroupName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            .padding(8)
+        }
+    }
+
+    private var modernDetail: some View {
+        Group {
+            if let gi = selectedGroupIndex {
+                VStack(spacing: 0) {
+                    // グループ名 (インライン編集)
+                    TextField("グループ名", text: $configManager.config.tabGroups[gi].name)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.headline)
+                        .onChange(of: configManager.config.tabGroups[gi].name) { _, _ in
+                            configManager.save()
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.top, 8)
+
+                    // ジオメトリ
+                    geometrySection
+                        .padding(.horizontal, 12)
+                        .padding(.top, 4)
+
+                    // パスリスト
+                    pathListView
+                        .padding(.horizontal, 12)
+                        .padding(.top, 4)
+
+                    Divider()
+
+                    // パス入力 + 参照
+                    HStack {
+                        TextField("フォルダパスを入力", text: $newPath)
+                            .textFieldStyle(.roundedBorder)
+                            .onSubmit { addPathFromEntry() }
+
+                        Button("追加") { addPathFromEntry() }
+                            .disabled(newPath.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                        Button(action: { browseFolder() }) {
+                            Image(systemName: "folder.badge.plus")
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+
+                    Divider()
+
+                    // 開くボタン
+                    openButton
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+            } else {
+                VStack {
+                    Image(systemName: "sidebar.left")
+                        .font(.system(size: 48))
+                        .foregroundStyle(.tertiary)
+                    Text("タブグループを選択してください")
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+    }
+
     // MARK: - Computed
 
     private var selectedGroupIndex: Int? {
@@ -408,6 +541,19 @@ struct ContentView: View {
             configManager.addTabGroup(name: "Tab 1")
         }
         selectedGroupID = configManager.config.tabGroups.first?.id
+        loadGeometry()
+    }
+
+    private func addGroupFromTextField() {
+        let name = newGroupName.trimmingCharacters(in: .whitespaces)
+        guard !name.isEmpty else { return }
+        if configManager.config.tabGroups.contains(where: { $0.name == name }) {
+            showAlert(title: "重複", message: "「\(name)」は既に存在します。")
+            return
+        }
+        configManager.addTabGroup(name: name)
+        selectedGroupID = configManager.config.tabGroups.last?.id
+        newGroupName = ""
         loadGeometry()
     }
 
