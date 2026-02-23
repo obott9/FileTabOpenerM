@@ -545,6 +545,14 @@ struct ContentView: View {
         }
         selectedGroupID = configManager.config.tabGroups.first?.id
         loadGeometry()
+
+        // アクセシビリティ権限の起動時チェック
+        if !FinderTabController.isAccessibilityEnabled {
+            logWarning("Accessibility permission not granted at launch")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showAccessibilityDialog()
+            }
+        }
     }
 
     private func addGroupFromTextField() {
@@ -819,8 +827,7 @@ struct ContentView: View {
             case .noTabBar:
                 showAlert(title: L("error"), message: L("tab_bar_hidden"))
             case .accessibilityDenied:
-                showAlert(title: L("error"), message: L("accessibility_required"))
-                FinderTabController.requestAccessibility()
+                showAccessibilityDialog()
             }
         }
     }
@@ -857,6 +864,25 @@ struct ContentView: View {
         alert.informativeText = message
         alert.addButton(withTitle: L("ok"))
         alert.runModal()
+    }
+
+    /// アクセシビリティ権限の説明ダイアログ
+    /// 「システム設定を開く」ボタンでプライバシー設定を直接開く
+    private func showAccessibilityDialog() {
+        logInfo("Showing accessibility permission dialog")
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = L("accessibility_dialog_title")
+        alert.informativeText = L("accessibility_dialog_message")
+        alert.addButton(withTitle: L("open_system_settings"))
+        alert.addButton(withTitle: L("cancel"))
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            logInfo("User chose to open System Settings")
+            // AXIsProcessTrustedWithOptions で OS のプロンプトを表示
+            // → システム設定 > プライバシーとセキュリティ > アクセシビリティ が開く
+            FinderTabController.requestAccessibility()
+        }
     }
 }
 

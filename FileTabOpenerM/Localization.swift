@@ -112,6 +112,11 @@ final class Localization {
             "accessibility_required": "Accessibility permission is required",
             "success_count": "%d succeeded, %d failed",
 
+            // Accessibility dialog
+            "accessibility_dialog_title": "Accessibility Permission Required",
+            "accessibility_dialog_message": "FileTabOpenerM needs Accessibility permission to create and control Finder tabs.\n\nAfter clicking the button below, enable FileTabOpenerM in:\nSystem Settings \u{2192} Privacy & Security \u{2192} Accessibility",
+            "open_system_settings": "Open System Settings",
+
             // Toast
             "opening_tabs": "Opening tabs...",
 
@@ -178,6 +183,11 @@ final class Localization {
             "tab_bar_hidden": "タブバーが非表示です（表示→タブバーを表示）",
             "accessibility_required": "アクセシビリティ権限が必要です",
             "success_count": "%d 個成功, %d 個失敗",
+
+            // Accessibility dialog
+            "accessibility_dialog_title": "アクセシビリティ権限が必要です",
+            "accessibility_dialog_message": "FileTabOpenerM が Finder のタブを作成・制御するには、アクセシビリティ権限が必要です。\n\n下のボタンをクリック後、以下で FileTabOpenerM を有効にしてください:\nシステム設定 \u{2192} プライバシーとセキュリティ \u{2192} アクセシビリティ",
+            "open_system_settings": "システム設定を開く",
 
             // Toast
             "opening_tabs": "タブを開いています...",
@@ -246,6 +256,11 @@ final class Localization {
             "accessibility_required": "접근성 권한이 필요합니다",
             "success_count": "%d개 성공, %d개 실패",
 
+            // Accessibility dialog
+            "accessibility_dialog_title": "접근성 권한이 필요합니다",
+            "accessibility_dialog_message": "FileTabOpenerM이 Finder 탭을 생성하고 제어하려면 접근성 권한이 필요합니다.\n\n아래 버튼을 클릭한 후 다음에서 FileTabOpenerM을 활성화하세요:\n시스템 설정 \u{2192} 개인정보 보호 및 보안 \u{2192} 접근성",
+            "open_system_settings": "시스템 설정 열기",
+
             // Toast
             "opening_tabs": "탭을 여는 중...",
 
@@ -313,6 +328,11 @@ final class Localization {
             "accessibility_required": "需要輔助使用權限",
             "success_count": "%d 個成功, %d 個失敗",
 
+            // Accessibility dialog
+            "accessibility_dialog_title": "需要輔助使用權限",
+            "accessibility_dialog_message": "FileTabOpenerM 需要輔助使用權限來建立和控制 Finder 分頁。\n\n點擊下方按鈕後，請在以下位置啟用 FileTabOpenerM:\n系統設定 \u{2192} 隱私權與安全性 \u{2192} 輔助使用",
+            "open_system_settings": "開啟系統設定",
+
             // Toast
             "opening_tabs": "正在開啟分頁...",
 
@@ -379,6 +399,11 @@ final class Localization {
             "tab_bar_hidden": "标签栏已隐藏（显示 \u{2192} 显示标签栏）",
             "accessibility_required": "需要辅助功能权限",
             "success_count": "%d 个成功, %d 个失败",
+
+            // Accessibility dialog
+            "accessibility_dialog_title": "需要辅助功能权限",
+            "accessibility_dialog_message": "FileTabOpenerM 需要辅助功能权限来创建和控制 Finder 标签页。\n\n点击下方按钮后，请在以下位置启用 FileTabOpenerM:\n系统设置 \u{2192} 隐私与安全性 \u{2192} 辅助功能",
+            "open_system_settings": "打开系统设置",
 
             // Toast
             "opening_tabs": "正在打开标签页...",
