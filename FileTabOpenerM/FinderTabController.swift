@@ -126,6 +126,46 @@ final class FinderTabController: ObservableObject {
         appleScript?.executeAndReturnError(&error)
     }
 
+    /// Finder で新しいウィンドウを作成し、指定パスを表示
+    private func createFinderWindow(_ path: String) -> Bool {
+        let escaped = path.replacingOccurrences(of: "\\", with: "\\\\")
+                          .replacingOccurrences(of: "\"", with: "\\\"")
+        let script = """
+        tell application "Finder"
+            make new Finder window to (POSIX file "\(escaped)" as alias)
+        end tell
+        """
+        let appleScript = NSAppleScript(source: script)
+        var error: NSDictionary?
+        appleScript?.executeAndReturnError(&error)
+        if let error = error {
+            logError("Failed to create Finder window: \(error)")
+            return false
+        }
+        logInfo("Created new Finder window for: \(path)")
+        return true
+    }
+
+    /// タブバーを表示 (⇧⌘T)
+    private func showTabBar() -> Bool {
+        let script = """
+        tell application "System Events"
+            tell process "Finder"
+                keystroke "t" using {command down, shift down}
+            end tell
+        end tell
+        """
+        let appleScript = NSAppleScript(source: script)
+        var error: NSDictionary?
+        appleScript?.executeAndReturnError(&error)
+        if let error = error {
+            logError("Failed to show tab bar: \(error)")
+            return false
+        }
+        logInfo("Tab bar show command sent")
+        return true
+    }
+
     // MARK: - 公開 API
 
     /// アクセシビリティ権限の確認
@@ -174,24 +214,50 @@ final class FinderTabController: ObservableObject {
         // Finder の準備を待つ (変化検出ではなく初期化待ち)
         try? await Task.sleep(nanoseconds: 200_000_000)
 
+        var firstPathHandled = false
+
+        // ウィンドウがなければ新規作成 (最初のパスで)
+        if frontWindow(appRef) == nil {
+            logInfo("No Finder window found, creating new window with: \(validPaths[0])")
+            if createFinderWindow(validPaths[0]) {
+                firstPathHandled = true
+                try? await Task.sleep(nanoseconds: 300_000_000)
+            } else {
+                logError("Failed to create Finder window")
+                return .noFinderWindow
+            }
+        }
+
+        // ウィンドウの存在を再確認
         guard frontWindow(appRef) != nil else {
-            logError("No Finder window found")
+            logError("No Finder window found after creation attempt")
             return .noFinderWindow
         }
 
-        // タブバーの存在確認
-        guard findNewTabButton(appRef) != nil else {
-            logError("Tab bar not visible (New Tab button not found)")
-            return .noTabBar
+        // タブバーの存在確認、なければ表示を試みる
+        if findNewTabButton(appRef) == nil {
+            logInfo("Tab bar not visible, attempting to show it (Shift+Cmd+T)")
+            if showTabBar() {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+            }
+            // 再確認
+            if findNewTabButton(appRef) == nil {
+                logError("Tab bar still not visible after show attempt")
+                return .noTabBar
+            }
         }
 
         var errors: [String] = []
 
-        // 最初のパス: 既存タブに設定
-        logInfo("Setting first tab target: \(validPaths[0])")
-        if !setFinderTarget(validPaths[0]) {
-            logError("Failed to set target: \(validPaths[0])")
-            errors.append(validPaths[0])
+        // 最初のパス: 既存タブに設定 (新規ウィンドウで既に設定済みなら skip)
+        if !firstPathHandled {
+            logInfo("Setting first tab target: \(validPaths[0])")
+            if !setFinderTarget(validPaths[0]) {
+                logError("Failed to set target: \(validPaths[0])")
+                errors.append(validPaths[0])
+            }
+        } else {
+            logInfo("First path already set via new window creation")
         }
 
         // ウィンドウサイズ設定
