@@ -3,6 +3,11 @@
 //
 // AXUIElement + AppleScript ハイブリッドで Finder タブを制御する
 // ⭐ 設計意図: System Events keystroke を排除し、AX API で直接操作
+//
+// 高速化:
+//   D. AXUIElement キャッシュ — TabGroup / NewTabButton の再帰走査を排除
+//   E. AXUIElementGetAttributeValueCount — 軽量タブ数変化検出
+//   A. プリコンパイル済み NSAppleScript — タブ毎のコンパイルを排除
 
 import AppKit
 @preconcurrency import ApplicationServices
@@ -24,6 +29,73 @@ final class FinderTabController: ObservableObject {
 
     @Published private(set) var isOpening = false
 
+    // MARK: - AX キャッシュ (タブ操作ループ中に再利用)
+
+    private var cachedTabGroup: AXUIElement?
+    private var cachedNewTabButton: AXUIElement?
+
+    private func clearCaches() {
+        cachedTabGroup = nil
+        cachedNewTabButton = nil
+    }
+
+    // MARK: - プリコンパイル済み AppleScript
+
+    /// Apple Event constants (Carbon/OpenScripting.h)
+    private static let aeScriptSuite: AEEventClass = 0x61736372   // 'ascr' kASAppleScriptSuite
+    private static let aeSubroutineEvent: AEEventID = 0x70736272  // 'psbr' kASSubroutineEvent
+    private static let aeKeySubroutineName: AEKeyword = 0x736E616D // 'snam' keyASSubroutineName
+    private static let aeKeyDirectObject: AEKeyword = 0x2D2D2D2D  // '----' keyDirectObject
+
+    /// 全 AppleScript ハンドラを1回だけコンパイル (以降はハンドラ呼び出しのみ)
+    private lazy var compiledScript: NSAppleScript? = {
+        let source = """
+        on create_window(posix_path)
+            tell application "Finder"
+                make new Finder window to (POSIX file posix_path as alias)
+            end tell
+        end create_window
+
+        on set_target(posix_path)
+            tell application "Finder"
+                set target of front Finder window to (POSIX file posix_path as alias)
+            end tell
+        end set_target
+
+        on set_bounds(x1, y1, x2, y2)
+            tell application "Finder"
+                set bounds of front Finder window to {x1, y1, x2, y2}
+            end tell
+        end set_bounds
+        """
+        let script = NSAppleScript(source: source)
+        var error: NSDictionary?
+        script?.compileAndReturnError(&error)
+        if let error = error { logError("Failed to compile AppleScript: \(error)") }
+        logInfo("AppleScript handlers compiled")
+        return script
+    }()
+
+    /// プリコンパイル済みスクリプトのハンドラを呼び出す (再コンパイルなし)
+    private func callHandler(_ name: String, params: NSAppleEventDescriptor) -> Bool {
+        guard let script = compiledScript else { return false }
+        let event = NSAppleEventDescriptor.appleEvent(
+            withEventClass: Self.aeScriptSuite,
+            eventID: Self.aeSubroutineEvent,
+            targetDescriptor: nil,
+            returnID: AEReturnID(kAutoGenerateReturnID),
+            transactionID: AETransactionID(kAnyTransactionID)
+        )
+        event.setParam(
+            NSAppleEventDescriptor(string: name),
+            forKeyword: Self.aeKeySubroutineName
+        )
+        event.setParam(params, forKeyword: Self.aeKeyDirectObject)
+        var error: NSDictionary?
+        script.executeAppleEvent(event, error: &error)
+        return error == nil
+    }
+
     // MARK: - AX ヘルパー (private)
 
     private func axValue(_ element: AXUIElement, _ attr: String) -> CFTypeRef? {
@@ -41,6 +113,12 @@ final class FinderTabController: ObservableObject {
 
     private func axPress(_ element: AXUIElement) -> Bool {
         AXUIElementPerformAction(element, kAXPressAction as CFString) == .success
+    }
+
+    /// AXUIElement が有効か確認 (1 IPC コール)
+    private func isValidAXElement(_ element: AXUIElement) -> Bool {
+        var value: CFTypeRef?
+        return AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &value) == .success
     }
 
     /// 再帰的に要素を探す
@@ -76,7 +154,18 @@ final class FinderTabController: ObservableObject {
         (axValue(appRef, kAXWindowsAttribute) as? [AXUIElement])?.first
     }
 
-    /// 「新規タブ」ボタンを多言語対応で探索
+    /// TabGroup を探す (キャッシュ付き — ループ中の繰り返し走査を排除)
+    private func findTabGroup(_ appRef: AXUIElement) -> AXUIElement? {
+        if let cached = cachedTabGroup, isValidAXElement(cached) {
+            return cached
+        }
+        guard let win = frontWindow(appRef),
+              let tg = findElement(win, role: "AXTabGroup") else { return nil }
+        cachedTabGroup = tg
+        return tg
+    }
+
+    /// 「新規タブ」ボタンを多言語対応で探索 (キャッシュ付き)
     /// AX description は OS 言語に依存するため、主要言語すべてを網羅
     private static let newTabDescriptions = [
         "New Tab",           // en
@@ -91,10 +180,14 @@ final class FinderTabController: ObservableObject {
     ]
 
     private func findNewTabButton(_ appRef: AXUIElement) -> AXUIElement? {
-        guard let win = frontWindow(appRef),
-              let tg = findElement(win, role: "AXTabGroup") else { return nil }
+        // キャッシュが有効ならそのまま返す (1 IPC で検証)
+        if let cached = cachedNewTabButton, isValidAXElement(cached) {
+            return cached
+        }
+        guard let tg = findTabGroup(appRef) else { return nil }
         for desc in Self.newTabDescriptions {
             if let btn = findElement(tg, role: "AXButton", description: desc) {
+                cachedNewTabButton = btn
                 return btn
             }
         }
@@ -103,6 +196,7 @@ final class FinderTabController: ObservableObject {
         let buttons = axChildren(tg).filter { axString($0, kAXRoleAttribute) == "AXButton" }
         if let lastButton = buttons.last {
             logInfo("New Tab button found via fallback (last button in TabGroup)")
+            cachedNewTabButton = lastButton
             return lastButton
         }
         return nil
@@ -118,110 +212,60 @@ final class FinderTabController: ObservableObject {
         return false
     }
 
-    private func tabCount(_ appRef: AXUIElement) -> Int {
-        guard let win = frontWindow(appRef),
-              let tg = findElement(win, role: "AXTabGroup") else { return 0 }
-        return axChildren(tg).filter { axString($0, kAXSubroleAttribute) == "AXTabButton" }.count
+    /// TabGroup の子要素数を軽量に取得 (1 IPC コール、再帰走査なし)
+    private func tabChildCount(_ tabGroup: AXUIElement) -> CFIndex {
+        var count: CFIndex = 0
+        AXUIElementGetAttributeValueCount(tabGroup, kAXChildrenAttribute as CFString, &count)
+        return count
     }
 
-    /// タブ数変化を検出 (20ms ポーリング)
+    /// タブ数変化を検出 (20ms ポーリング、軽量カウント API 使用)
+    /// 現旧: 毎ポーリングで AX ツリー全再帰走査 → 改善: 1 IPC コール/ポーリング
     /// ⚠️ 呼び出し元は nonisolated context で実行すること (UI ブロック防止)
     private nonisolated func waitForTabCountChange(
-        _ appRef: AXUIElement, from expected: Int, timeout: TimeInterval
+        _ tabGroup: AXUIElement, from expected: CFIndex, timeout: TimeInterval
     ) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            // AX API はどのスレッドからでも呼べる
-            var value: CFTypeRef?
-            guard AXUIElementCopyAttributeValue(appRef, kAXWindowsAttribute as CFString, &value) == .success,
-                  let windows = value as? [AXUIElement],
-                  let win = windows.first else { continue }
-
-            // TabGroup を探す
-            var tgRef: AXUIElement?
-            func findTG(_ element: AXUIElement) {
-                var roleVal: CFTypeRef?
-                if AXUIElementCopyAttributeValue(element, kAXRoleAttribute as CFString, &roleVal) == .success,
-                   let role = roleVal as? String, role == "AXTabGroup" {
-                    tgRef = element
-                    return
-                }
-                var childrenVal: CFTypeRef?
-                if AXUIElementCopyAttributeValue(element, kAXChildrenAttribute as CFString, &childrenVal) == .success,
-                   let children = childrenVal as? [AXUIElement] {
-                    for child in children {
-                        if tgRef != nil { return }
-                        findTG(child)
-                    }
-                }
-            }
-            findTG(win)
-
-            if let tg = tgRef {
-                var childrenVal: CFTypeRef?
-                if AXUIElementCopyAttributeValue(tg, kAXChildrenAttribute as CFString, &childrenVal) == .success,
-                   let children = childrenVal as? [AXUIElement] {
-                    var count = 0
-                    for child in children {
-                        var subVal: CFTypeRef?
-                        if AXUIElementCopyAttributeValue(child, kAXSubroleAttribute as CFString, &subVal) == .success,
-                           let sub = subVal as? String, sub == "AXTabButton" {
-                            count += 1
-                        }
-                    }
-                    if count != expected { return true }
-                }
+            var count: CFIndex = 0
+            if AXUIElementGetAttributeValueCount(
+                tabGroup, kAXChildrenAttribute as CFString, &count
+            ) == .success, count != expected {
+                return true
             }
             usleep(20_000)
         }
         return false
     }
 
-    // MARK: - AppleScript
+    // MARK: - AppleScript (プリコンパイル済みハンドラ経由)
 
     private func setFinderTarget(_ path: String) -> Bool {
-        let escaped = path.replacingOccurrences(of: "\\", with: "\\\\")
-                          .replacingOccurrences(of: "\"", with: "\\\"")
-        let script = """
-        tell application "Finder"
-            set target of front Finder window to (POSIX file "\(escaped)" as alias)
-        end tell
-        """
-        let appleScript = NSAppleScript(source: script)
-        var error: NSDictionary?
-        appleScript?.executeAndReturnError(&error)
-        return error == nil
+        let params = NSAppleEventDescriptor.list()
+        params.insert(NSAppleEventDescriptor(string: path), at: 1)
+        return callHandler("set_target", params: params)
     }
 
     private func setFinderBounds(_ rect: NSRect) {
-        let script = """
-        tell application "Finder"
-            set bounds of front Finder window to {\(Int(rect.origin.x)), \(Int(rect.origin.y)), \(Int(rect.origin.x + rect.size.width)), \(Int(rect.origin.y + rect.size.height))}
-        end tell
-        """
-        let appleScript = NSAppleScript(source: script)
-        var error: NSDictionary?
-        appleScript?.executeAndReturnError(&error)
+        let params = NSAppleEventDescriptor.list()
+        params.insert(NSAppleEventDescriptor(int32: Int32(rect.origin.x)), at: 1)
+        params.insert(NSAppleEventDescriptor(int32: Int32(rect.origin.y)), at: 2)
+        params.insert(NSAppleEventDescriptor(int32: Int32(rect.origin.x + rect.size.width)), at: 3)
+        params.insert(NSAppleEventDescriptor(int32: Int32(rect.origin.y + rect.size.height)), at: 4)
+        _ = callHandler("set_bounds", params: params)
     }
 
     /// Finder で新しいウィンドウを作成し、指定パスを表示
     private func createFinderWindow(_ path: String) -> Bool {
-        let escaped = path.replacingOccurrences(of: "\\", with: "\\\\")
-                          .replacingOccurrences(of: "\"", with: "\\\"")
-        let script = """
-        tell application "Finder"
-            make new Finder window to (POSIX file "\(escaped)" as alias)
-        end tell
-        """
-        let appleScript = NSAppleScript(source: script)
-        var error: NSDictionary?
-        appleScript?.executeAndReturnError(&error)
-        if let error = error {
-            logError("Failed to create Finder window: \(error)")
-            return false
+        let params = NSAppleEventDescriptor.list()
+        params.insert(NSAppleEventDescriptor(string: path), at: 1)
+        let success = callHandler("create_window", params: params)
+        if success {
+            logInfo("Created new Finder window for: \(path)")
+        } else {
+            logError("Failed to create Finder window: \(path)")
         }
-        logInfo("Created new Finder window for: \(path)")
-        return true
+        return success
     }
 
     /// タブバーを表示 — AX API でメニュー項目を操作 (System Events 不要)
@@ -305,6 +349,9 @@ final class FinderTabController: ObservableObject {
 
         isOpening = true
         defer { isOpening = false }
+
+        // 新しいウィンドウを開くのでキャッシュをクリア
+        clearCaches()
 
         // パス重複除去 (順序維持)
         let deduplicated = Array(NSOrderedSet(array: paths)) as! [String]
@@ -410,17 +457,24 @@ final class FinderTabController: ObservableObject {
                 continue
             }
 
-            let before = tabCount(appRef)
+            // キャッシュ済み TabGroup から軽量カウント (1 IPC)
+            guard let tg = findTabGroup(appRef) else {
+                logError("TabGroup not found for: \(path)")
+                errors.append(path)
+                continue
+            }
+            let before = tabChildCount(tg)
+
             guard axPress(btn) else {
                 logError("AXPress failed for: \(path)")
                 errors.append(path)
                 continue
             }
 
-            // UI ブロック回避: バックグラウンドでポーリング
+            // UI ブロック回避: バックグラウンドで軽量ポーリング
             let changed = await withCheckedContinuation { continuation in
                 DispatchQueue.global(qos: .userInteractive).async {
-                    let result = self.waitForTabCountChange(appRef, from: before, timeout: tabTimeout)
+                    let result = self.waitForTabCountChange(tg, from: before, timeout: tabTimeout)
                     continuation.resume(returning: result)
                 }
             }
