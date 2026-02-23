@@ -2,7 +2,7 @@
 // FileTabOpenerM
 //
 // アプリケーションログ管理
-// 保存先: ~/Library/Application Support/FileTabOpener/logs/app.log
+// 保存先: ~/Library/Application Support/FileTabOpenerM/logs/app.log
 
 import Foundation
 
@@ -32,7 +32,7 @@ final class AppLogger {
             for: .applicationSupportDirectory, in: .userDomainMask
         ).first!
         let logDir = appSupport
-            .appendingPathComponent("FileTabOpener")
+            .appendingPathComponent("FileTabOpenerM")
             .appendingPathComponent("logs")
         logURL = logDir.appendingPathComponent("app.log")
 

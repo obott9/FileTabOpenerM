@@ -2,8 +2,7 @@
 // FileTabOpenerM
 //
 // JSON 設定ファイルの読み書き
-// 保存先: ~/Library/Application Support/FileTabOpener/config.json
-// (Python 版と同じパス・フォーマットで互換性あり)
+// 保存先: ~/Library/Application Support/FileTabOpenerM/config.json
 
 import Combine
 import Foundation
@@ -18,7 +17,7 @@ final class ConfigManager: ObservableObject {
 
     private init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let configDir = appSupport.appendingPathComponent("FileTabOpener")
+        let configDir = appSupport.appendingPathComponent("FileTabOpenerM")
         configURL = configDir.appendingPathComponent("config.json")
 
         // デフォルト値で初期化 → load で上書き
