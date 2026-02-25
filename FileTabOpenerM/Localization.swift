@@ -65,16 +65,21 @@ final class Localization {
             "clear": "Clear",
             "no_history": "No history",
 
-            // Tab management
+            // Tab management (shared / Modern context menu)
             "add": "Add",
             "delete": "Delete",
             "rename": "Rename",
             "copy": "Copy",
 
+            // Tab management (Classic buttons — Python版準拠)
+            "add_tab_btn": "+ Add Tab",
+            "delete_tab_btn": "x Delete Tab",
+            "copy_tab_btn": "Copy Tab",
+
             // Path list
             "move_up": "\u{25B2} Up",
             "move_down": "\u{25BC} Down",
-            "add_path": "+ Add",
+            "add_path": "+ Add Path",
             "remove_path": "- Remove",
             "browse": "Browse...",
             "enter_folder_path": "Enter folder path",
@@ -138,17 +143,22 @@ final class Localization {
             "clear": "クリア",
             "no_history": "履歴がありません",
 
-            // Tab management
+            // Tab management (shared / Modern context menu)
             "add": "追加",
             "delete": "削除",
             "rename": "名前変更",
             "copy": "コピー",
 
+            // Tab management (Classic buttons — Python版準拠)
+            "add_tab_btn": "+ タブ追加",
+            "delete_tab_btn": "x タブ削除",
+            "copy_tab_btn": "タブ複製",
+
             // Path list
             "move_up": "\u{25B2} 上へ",
             "move_down": "\u{25BC} 下へ",
-            "add_path": "+ 追加",
-            "remove_path": "- 削除",
+            "add_path": "+ パス追加",
+            "remove_path": "- パス削除",
             "browse": "参照...",
             "enter_folder_path": "フォルダパスを入力",
 
@@ -211,17 +221,22 @@ final class Localization {
             "clear": "지우기",
             "no_history": "기록 없음",
 
-            // Tab management
+            // Tab management (shared / Modern context menu)
             "add": "추가",
             "delete": "삭제",
             "rename": "이름 변경",
             "copy": "복사",
 
+            // Tab management (Classic buttons — Python版準拠)
+            "add_tab_btn": "+ 탭 추가",
+            "delete_tab_btn": "x 탭 삭제",
+            "copy_tab_btn": "탭 복사",
+
             // Path list
             "move_up": "\u{25B2} 위로",
             "move_down": "\u{25BC} 아래로",
-            "add_path": "+ 추가",
-            "remove_path": "- 삭제",
+            "add_path": "+ 경로 추가",
+            "remove_path": "- 경로 삭제",
             "browse": "찾아보기...",
             "enter_folder_path": "폴더 경로 입력",
 
@@ -284,17 +299,22 @@ final class Localization {
             "clear": "清除",
             "no_history": "無歷史記錄",
 
-            // Tab management
+            // Tab management (shared / Modern context menu)
             "add": "新增",
             "delete": "刪除",
             "rename": "重新命名",
             "copy": "複製",
 
+            // Tab management (Classic buttons — Python版準拠)
+            "add_tab_btn": "+ 新增分頁",
+            "delete_tab_btn": "x 刪除分頁",
+            "copy_tab_btn": "複製分頁",
+
             // Path list
             "move_up": "\u{25B2} 上移",
             "move_down": "\u{25BC} 下移",
-            "add_path": "+ 新增",
-            "remove_path": "- 刪除",
+            "add_path": "+ 新增路徑",
+            "remove_path": "- 移除路徑",
             "browse": "瀏覽...",
             "enter_folder_path": "輸入資料夾路徑",
 
@@ -357,17 +377,22 @@ final class Localization {
             "clear": "清除",
             "no_history": "无历史记录",
 
-            // Tab management
+            // Tab management (shared / Modern context menu)
             "add": "添加",
             "delete": "删除",
             "rename": "重命名",
             "copy": "复制",
 
+            // Tab management (Classic buttons — Python版準拠)
+            "add_tab_btn": "+ 添加标签",
+            "delete_tab_btn": "x 删除标签",
+            "copy_tab_btn": "复制标签",
+
             // Path list
             "move_up": "\u{25B2} 上移",
             "move_down": "\u{25BC} 下移",
-            "add_path": "+ 添加",
-            "remove_path": "- 删除",
+            "add_path": "+ 添加路径",
+            "remove_path": "- 删除路径",
             "browse": "浏览...",
             "enter_folder_path": "输入文件夹路径",
 

@@ -349,13 +349,13 @@ struct ContentView: View {
 
     private var tabManagementBar: some View {
         HStack(spacing: 4) {
-            Button(L("add")) { addTabGroup() }
+            Button(L("add_tab_btn")) { addTabGroup() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("delete")) { deleteSelectedGroup() }
+            Button(L("delete_tab_btn")) { deleteSelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
             Button(L("rename")) { renameSelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("copy")) { copySelectedGroup() }
+            Button(L("copy_tab_btn")) { copySelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
 
             Spacer().frame(width: 10)
