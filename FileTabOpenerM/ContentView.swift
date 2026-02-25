@@ -490,6 +490,45 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Modern Path List View (ドラッグ並べ替え + 削除対応)
+
+    private var modernPathListView: some View {
+        Group {
+            if let gi = selectedGroupIndex {
+                List(selection: $selectedPathIndex) {
+                    ForEach(Array(configManager.config.tabGroups[gi].paths.enumerated()),
+                            id: \.offset) { offset, path in
+                        Text(path)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                            .tag(offset)
+                            .contextMenu {
+                                Button(L("delete"), role: .destructive) {
+                                    deletePath(at: offset, in: gi)
+                                }
+                            }
+                    }
+                    .onDelete { offsets in
+                        deletePathsAtOffsets(offsets)
+                    }
+                    .onMove { from, to in
+                        movePathsFromOffsets(from, to: to)
+                    }
+                }
+                .listStyle(.bordered)
+                .onChange(of: selectedPathIndex) { _, newIndex in
+                    if let pi = newIndex,
+                       configManager.config.tabGroups[gi].paths.indices.contains(pi) {
+                        newPath = configManager.config.tabGroups[gi].paths[pi]
+                    }
+                }
+            } else {
+                List { }
+                    .listStyle(.bordered)
+            }
+        }
+    }
+
     // MARK: - Path Entry
 
     private var pathEntrySection: some View {
@@ -600,8 +639,8 @@ struct ContentView: View {
                         .padding(.horizontal, 12)
                         .padding(.top, 4)
 
-                    // パスリスト
-                    pathListView
+                    // パスリスト (ドラッグ並べ替え + 右クリック削除対応)
+                    modernPathListView
                         .padding(.horizontal, 12)
                         .padding(.top, 4)
 
@@ -821,6 +860,31 @@ struct ContentView: View {
         configManager.config.tabGroups[gi].paths.swapAt(pi, pi + 1)
         configManager.save()
         selectedPathIndex = pi + 1
+    }
+
+    private func deletePath(at index: Int, in groupIndex: Int) {
+        guard configManager.config.tabGroups[groupIndex].paths.indices.contains(index) else { return }
+        let removed = configManager.config.tabGroups[groupIndex].paths[index]
+        logInfo("Path removed: \(removed)")
+        configManager.config.tabGroups[groupIndex].paths.remove(at: index)
+        configManager.save()
+        selectedPathIndex = nil
+    }
+
+    private func deletePathsAtOffsets(_ offsets: IndexSet) {
+        guard let gi = selectedGroupIndex else { return }
+        for index in offsets.sorted().reversed() {
+            logInfo("Path removed: \(configManager.config.tabGroups[gi].paths[index])")
+        }
+        configManager.config.tabGroups[gi].paths.remove(atOffsets: offsets)
+        configManager.save()
+        selectedPathIndex = nil
+    }
+
+    private func movePathsFromOffsets(_ from: IndexSet, to: Int) {
+        guard let gi = selectedGroupIndex else { return }
+        configManager.config.tabGroups[gi].paths.move(fromOffsets: from, toOffset: to)
+        configManager.save()
     }
 
     private func browseFolder() {
