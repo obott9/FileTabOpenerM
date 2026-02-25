@@ -7,10 +7,53 @@
 
 import SwiftUI
 
+// MARK: - Python版 customtkinter "blue" テーマ色定数
+
+/// Python版の customtkinter blue テーマに合わせた色定義
+/// blue.json + widgets.py の _update_ctk_highlight() から抽出
+private enum PythonTheme {
+    // タブボタン (選択)
+    static let tabSelectedBg = Color(light: Color(hex: "3B8ED0"), dark: Color(hex: "1F6AA5"))
+    // タブボタン (未選択) — gray78 / gray28
+    static let tabUnselectedBg = Color(light: Color(hex: "C7C7C7"), dark: Color(hex: "474747"))
+    // タブボタンテキスト (選択)
+    static let tabSelectedText = Color.white
+    // タブボタンテキスト (未選択) — gray20 / gray80
+    static let tabUnselectedText = Color(light: Color(hex: "333333"), dark: Color(hex: "CCCCCC"))
+    // Listbox 選択色
+    static let listSelectBg = Color(hex: "1F6AA5")
+}
+
+// MARK: - Color Extensions
+
+extension Color {
+    /// hex文字列からColorを生成 (例: "3B8ED0", "#3B8ED0")
+    init(hex: String) {
+        let h = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        var rgb: UInt64 = 0
+        Scanner(string: h).scanHexInt64(&rgb)
+        self.init(
+            red: Double((rgb >> 16) & 0xFF) / 255,
+            green: Double((rgb >> 8) & 0xFF) / 255,
+            blue: Double(rgb & 0xFF) / 255
+        )
+    }
+
+    /// Light/Dark mode で異なる色を返す
+    init(light: Color, dark: Color) {
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            if appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua {
+                return NSColor(dark)
+            }
+            return NSColor(light)
+        })
+    }
+}
+
 // MARK: - FlowLayout (タブボタンの折り返しレイアウト)
 
 struct FlowLayout: Layout {
-    var spacing: CGFloat = 4
+    var spacing: CGFloat = 2
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let rows = computeRows(maxWidth: proposal.width ?? .infinity, subviews: subviews)
@@ -95,11 +138,10 @@ struct ContentView: View {
                 .padding(.horizontal, 10)
                 .padding(.top, 5)
 
-            Divider().padding(.horizontal, 10).padding(.vertical, 5)
-
             // --- History section ---
             historySection
                 .padding(.horizontal, 10)
+                .padding(.vertical, 5)
 
             Divider().padding(.horizontal, 10).padding(.vertical, 5)
 
@@ -114,12 +156,12 @@ struct ContentView: View {
                     .padding(.bottom, 10)
             }
         }
-        .frame(minWidth: 600, minHeight: 400)
+        .frame(minWidth: 600, minHeight: 400)  // Python版と同じ最小サイズ
         .overlay {
             if finderController.isOpening {
                 VStack {
                     Text(L("opening_tabs"))
-                        .font(.title3)
+                        .font(.body)
                         .padding(20)
                         .background(.regularMaterial)
                         .cornerRadius(10)
@@ -143,7 +185,7 @@ struct ContentView: View {
             .frame(width: 140)
 
             Spacer()
-            Text(L("timeout")).font(.caption)
+            Text(L("timeout")).font(.body)
             Picker("", selection: $configManager.config.settings.timeout) {
                 ForEach([5, 10, 15, 30, 60], id: \.self) { val in
                     Text("\(val)").tag(val)
@@ -155,7 +197,7 @@ struct ContentView: View {
                 logInfo("Timeout changed to \(newVal)s")
                 configManager.save()
             }
-            Text(L("seconds")).font(.caption)
+            Text(L("seconds")).font(.body)
 
             Text("\u{1F310}")
             Picker("", selection: $configManager.config.settings.language) {
@@ -179,7 +221,7 @@ struct ContentView: View {
 
     private var historySection: some View {
         HStack {
-            Text(L("history")).font(.callout)
+            Text(L("history")).font(.body)
 
             TextField(L("enter_path_or_drop"), text: $historyText)
                 .textFieldStyle(.roundedBorder)
@@ -278,58 +320,59 @@ struct ContentView: View {
 
     private var tabButtonsView: some View {
         ScrollView(.vertical) {
-            FlowLayout(spacing: 4) {
+            FlowLayout(spacing: 2) {
                 ForEach(configManager.config.tabGroups) { group in
                     Button(action: { selectGroup(group.id) }) {
                         Text(group.name)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, 6)
                             .padding(.vertical, 4)
                             .background(
                                 selectedGroupID == group.id
-                                    ? Color.accentColor
-                                    : Color.gray.opacity(0.3)
+                                    ? PythonTheme.tabSelectedBg
+                                    : PythonTheme.tabUnselectedBg
                             )
                             .foregroundColor(
-                                selectedGroupID == group.id ? .white : .primary
+                                selectedGroupID == group.id
+                                    ? PythonTheme.tabSelectedText
+                                    : PythonTheme.tabUnselectedText
                             )
                             .cornerRadius(6)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(4)
+            .padding(2)
         }
-        .frame(height: 96) // 3行 × 32px
+        .frame(height: 102) // 3行 × 34px (Python: VISIBLE_ROWS=3, ROW_HEIGHT=32 + PAD_Y*2=2)
         .background(Color(nsColor: .controlBackgroundColor))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 
     // MARK: - Geometry Section
 
     private var geometrySection: some View {
         HStack {
-            Text("X:").font(.caption)
+            Text("X:").font(.body)
             TextField("", text: $geomX)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 60)
+                .frame(width: 70)
                 .onSubmit { saveGeometry() }
 
-            Text("Y:").font(.caption)
+            Text("Y:").font(.body)
             TextField("", text: $geomY)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 60)
+                .frame(width: 70)
                 .onSubmit { saveGeometry() }
 
-            Text("W:").font(.caption)
+            Text("W:").font(.body)
             TextField("", text: $geomW)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 60)
+                .frame(width: 70)
                 .onSubmit { saveGeometry() }
 
-            Text("H:").font(.caption)
+            Text("H:").font(.body)
             TextField("", text: $geomH)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 60)
+                .frame(width: 70)
                 .onSubmit { saveGeometry() }
 
             Button(L("get_from_finder")) { getFinderBounds() }

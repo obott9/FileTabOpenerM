@@ -16,7 +16,7 @@ struct FileTabOpenerMApp: App {
         WindowGroup {
             ContentView()
         }
-        .defaultSize(width: 600, height: 400)
+        .defaultSize(width: 800, height: 600)
     }
 }
 
