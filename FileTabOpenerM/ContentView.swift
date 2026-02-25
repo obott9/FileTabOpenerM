@@ -22,6 +22,35 @@ private enum PythonTheme {
     static let tabUnselectedText = Color(light: Color(hex: "333333"), dark: Color(hex: "CCCCCC"))
     // Listbox 選択色
     static let listSelectBg = Color(hex: "1F6AA5")
+
+    // CTkButton デフォルト色 (blue.json CTkButton セクション)
+    static let buttonBg = Color(light: Color(hex: "3B8ED0"), dark: Color(hex: "1F6AA5"))
+    static let buttonHover = Color(light: Color(hex: "36719F"), dark: Color(hex: "144870"))
+    static let buttonText = Color(hex: "DCE4EE")
+
+    // CTkFrame 背景色 — gray86 / gray17
+    static let frameBg = Color(light: Color(hex: "DBDBDB"), dark: Color(hex: "2B2B2B"))
+}
+
+// MARK: - CTkButtonStyle (Python版 CTkButton を再現)
+
+/// customtkinter の CTkButton (blue テーマ) と同じ外観のボタンスタイル
+struct CTkButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body)
+            .foregroundColor(isEnabled ? PythonTheme.buttonText : PythonTheme.buttonText.opacity(0.5))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(configuration.isPressed
+                          ? PythonTheme.buttonHover
+                          : (isEnabled ? PythonTheme.buttonBg : PythonTheme.buttonBg.opacity(0.4)))
+            )
+    }
 }
 
 // MARK: - Color Extensions
@@ -140,6 +169,11 @@ struct ContentView: View {
 
             // --- History section ---
             historySection
+                .padding(8)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(PythonTheme.frameBg)
+                )
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
 
@@ -148,10 +182,20 @@ struct ContentView: View {
             // --- Tab group section ---
             if useModernLayout {
                 modernTabGroupSection
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(PythonTheme.frameBg)
+                    )
                     .padding(.horizontal, 10)
                     .padding(.bottom, 10)
             } else {
                 classicTabGroupSection
+                    .padding(8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(PythonTheme.frameBg)
+                    )
                     .padding(.horizontal, 10)
                     .padding(.bottom, 10)
             }
@@ -232,8 +276,11 @@ struct ContentView: View {
                 }
 
             Button(L("open_in_finder")) { openSingleFolder() }
-            Button("\u{1F4CC}") { toggleHistoryPin() }.frame(width: 36)
+                .buttonStyle(CTkButtonStyle())
+            Button("\u{1F4CC}") { toggleHistoryPin() }
+                .buttonStyle(CTkButtonStyle())
             Button(L("clear")) { clearHistory() }
+                .buttonStyle(CTkButtonStyle())
         }
     }
 
@@ -303,14 +350,20 @@ struct ContentView: View {
     private var tabManagementBar: some View {
         HStack(spacing: 4) {
             Button(L("add")) { addTabGroup() }
+                .buttonStyle(CTkButtonStyle())
             Button(L("delete")) { deleteSelectedGroup() }
+                .buttonStyle(CTkButtonStyle())
             Button(L("rename")) { renameSelectedGroup() }
+                .buttonStyle(CTkButtonStyle())
             Button(L("copy")) { copySelectedGroup() }
+                .buttonStyle(CTkButtonStyle())
 
             Spacer().frame(width: 10)
 
-            Button("\u{25C0}") { moveSelectedGroupLeft() }.frame(width: 30)
-            Button("\u{25B6}") { moveSelectedGroupRight() }.frame(width: 30)
+            Button("\u{25C0}") { moveSelectedGroupLeft() }
+                .buttonStyle(CTkButtonStyle())
+            Button("\u{25B6}") { moveSelectedGroupRight() }
+                .buttonStyle(CTkButtonStyle())
 
             Spacer()
         }
@@ -376,6 +429,7 @@ struct ContentView: View {
                 .onSubmit { saveGeometry() }
 
             Button(L("get_from_finder")) { getFinderBounds() }
+                .buttonStyle(CTkButtonStyle())
 
             Spacer()
         }
@@ -391,11 +445,21 @@ struct ContentView: View {
 
             // アクションボタン (右)
             VStack(spacing: 4) {
-                Button(L("move_up")) { movePathUp() }.frame(width: 80)
-                Button(L("move_down")) { movePathDown() }.frame(width: 80)
-                Button(L("add_path")) { addPathFromEntry() }.frame(width: 80)
-                Button(L("remove_path")) { removeSelectedPath() }.frame(width: 80)
-                Button(L("browse")) { browseFolder() }.frame(width: 80)
+                Button(L("move_up")) { movePathUp() }
+                    .buttonStyle(CTkButtonStyle())
+                    .frame(width: 90)
+                Button(L("move_down")) { movePathDown() }
+                    .buttonStyle(CTkButtonStyle())
+                    .frame(width: 90)
+                Button(L("add_path")) { addPathFromEntry() }
+                    .buttonStyle(CTkButtonStyle())
+                    .frame(width: 90)
+                Button(L("remove_path")) { removeSelectedPath() }
+                    .buttonStyle(CTkButtonStyle())
+                    .frame(width: 90)
+                Button(L("browse")) { browseFolder() }
+                    .buttonStyle(CTkButtonStyle())
+                    .frame(width: 90)
             }
         }
     }
@@ -438,20 +502,26 @@ struct ContentView: View {
     // MARK: - Open Button
 
     private var openButton: some View {
-        Button(action: { openTabs() }) {
+        let isDisabled = selectedGroupIndex == nil
+            || configManager.config.tabGroups[selectedGroupIndex!].paths.isEmpty
+            || finderController.isOpening
+
+        return Button(action: { openTabs() }) {
             HStack {
                 Image(systemName: "macwindow.badge.plus")
                 Text(L("open_as_tabs"))
             }
+            .font(.body)
+            .foregroundColor(isDisabled ? PythonTheme.buttonText.opacity(0.5) : PythonTheme.buttonText)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(isDisabled ? PythonTheme.buttonBg.opacity(0.4) : PythonTheme.buttonBg)
+            )
         }
-        .controlSize(.large)
-        .disabled(
-            selectedGroupIndex == nil
-            || configManager.config.tabGroups[selectedGroupIndex!].paths.isEmpty
-            || finderController.isOpening
-        )
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
     }
 
     // MARK: - Modern Tab Group Section (サイドバー方式)
@@ -504,6 +574,7 @@ struct ContentView: View {
                 Button(action: addGroupFromTextField) {
                     Image(systemName: "plus")
                 }
+                .buttonStyle(CTkButtonStyle())
                 .disabled(newGroupName.trimmingCharacters(in: .whitespaces).isEmpty)
             }
             .padding(8)
@@ -543,11 +614,13 @@ struct ContentView: View {
                             .onSubmit { addPathFromEntry() }
 
                         Button(L("add")) { addPathFromEntry() }
+                            .buttonStyle(CTkButtonStyle())
                             .disabled(newPath.trimmingCharacters(in: .whitespaces).isEmpty)
 
                         Button(action: { browseFolder() }) {
                             Image(systemName: "folder.badge.plus")
                         }
+                        .buttonStyle(CTkButtonStyle())
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
