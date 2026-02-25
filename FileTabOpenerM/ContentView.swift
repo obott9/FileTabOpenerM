@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Python版 customtkinter "blue" テーマ色定数
 
@@ -203,13 +204,31 @@ struct ContentView: View {
         .frame(minWidth: 600, minHeight: 400)  // Python版と同じ最小サイズ
         .overlay {
             if finderController.isOpening {
-                VStack {
-                    Text(L("opening_tabs"))
-                        .font(.body)
-                        .padding(20)
-                        .background(.regularMaterial)
-                        .cornerRadius(10)
+                VStack(spacing: 8) {
+                    if finderController.openingTotal > 0 {
+                        Text(L("toast_progress")
+                            .localized(finderController.openingCurrent)
+                            .localized(finderController.openingTotal))
+                            .font(.body.bold())
+                    } else {
+                        Text(L("opening_tabs"))
+                            .font(.body.bold())
+                    }
+                    if !finderController.openingPath.isEmpty {
+                        Text(compactPath(finderController.openingPath))
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Text(L("toast_wait"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
+                .padding(24)
+                .background(.regularMaterial)
+                .cornerRadius(10)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.black.opacity(0.2))
             }
@@ -269,6 +288,9 @@ struct ContentView: View {
 
             TextField(L("enter_path_or_drop"), text: $historyText)
                 .textFieldStyle(.roundedBorder)
+                .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                    handleFileDropToHistory(providers)
+                }
 
             Button("\u{25BC}") { showHistoryDropdown.toggle() }
                 .popover(isPresented: $showHistoryDropdown) {
@@ -535,6 +557,9 @@ struct ContentView: View {
         TextField(L("enter_folder_path"), text: $newPath)
             .textFieldStyle(.roundedBorder)
             .onSubmit { addPathFromEntry() }
+            .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                handleFileDrop(providers)
+            }
             .padding(.vertical, 2)
     }
 
@@ -651,6 +676,9 @@ struct ContentView: View {
                         TextField(L("enter_folder_path"), text: $newPath)
                             .textFieldStyle(.roundedBorder)
                             .onSubmit { addPathFromEntry() }
+                            .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+                                handleFileDrop(providers)
+                            }
 
                         Button(L("add")) { addPathFromEntry() }
                             .buttonStyle(CTkButtonStyle())
@@ -689,6 +717,15 @@ struct ContentView: View {
     private var selectedGroupIndex: Int? {
         guard let id = selectedGroupID else { return nil }
         return configManager.config.tabGroups.firstIndex(where: { $0.id == id })
+    }
+
+    /// トースト用パス短縮 (最大45文字、先頭 + ... + 末尾)
+    private func compactPath(_ path: String) -> String {
+        let maxLen = 45
+        guard path.count > maxLen else { return path }
+        let last = (path as NSString).lastPathComponent
+        let prefix = String(path.prefix(maxLen - last.count - 4))
+        return prefix + "/.../" + last
     }
 
     /// パス文字列のサニタイズ: 空白トリム + 前後のクォート除去
@@ -828,6 +865,21 @@ struct ContentView: View {
         let path = sanitizePath(newPath)
         guard !path.isEmpty, let gi = selectedGroupIndex else { return }
         let expanded = NSString(string: path).expandingTildeInPath
+
+        // 存在確認
+        if !FileManager.default.fileExists(atPath: expanded) {
+            logWarning("Path not found: \(expanded)")
+            showAlert(title: L("error"), message: L("path_not_found").localized(expanded))
+            return
+        }
+
+        // 重複チェック
+        if configManager.config.tabGroups[gi].paths.contains(expanded) {
+            logWarning("Duplicate path: \(expanded)")
+            showAlert(title: L("warning"), message: L("duplicate_path_msg").localized(expanded))
+            return
+        }
+
         logInfo("Path added: \(expanded)")
         configManager.config.tabGroups[gi].paths.append(expanded)
         configManager.save()
@@ -897,6 +949,34 @@ struct ContentView: View {
             newPath = url.path
             logInfo("Folder selected via browse: \(url.path)")
         }
+    }
+
+    // MARK: - ドラッグ&ドロップ
+
+    private func handleFileDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
+            guard let data = item as? Data,
+                  let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+            DispatchQueue.main.async {
+                self.newPath = url.path
+                logInfo("Path dropped: \(url.path)")
+            }
+        }
+        return true
+    }
+
+    private func handleFileDropToHistory(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
+            guard let data = item as? Data,
+                  let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+            DispatchQueue.main.async {
+                self.historyText = url.path
+                logInfo("Path dropped to history: \(url.path)")
+            }
+        }
+        return true
     }
 
     // MARK: - ジオメトリ

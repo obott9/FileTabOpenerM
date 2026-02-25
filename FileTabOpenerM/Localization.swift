@@ -125,6 +125,11 @@ final class Localization {
 
             // Toast
             "opening_tabs": "Opening tabs...",
+            "toast_progress": "Opening tabs... (%d/%d)",
+            "toast_wait": "Please wait.\nDo not use the keyboard or mouse.",
+
+            // Path validation
+            "duplicate_path_msg": "Path \"%@\" already exists in this group.",
 
             // Modern layout
             "select_tab_group": "Select a tab group",
@@ -203,6 +208,11 @@ final class Localization {
 
             // Toast
             "opening_tabs": "タブを開いています...",
+            "toast_progress": "タブを展開中... (%d/%d)",
+            "toast_wait": "しばらくお待ちください。\nキーボード・マウスを操作しないでください。",
+
+            // Path validation
+            "duplicate_path_msg": "パス「%@」はこのグループに既に存在します。",
 
             // Modern layout
             "select_tab_group": "タブグループを選択してください",
@@ -281,6 +291,11 @@ final class Localization {
 
             // Toast
             "opening_tabs": "탭을 여는 중...",
+            "toast_progress": "탭 열는 중... (%d/%d)",
+            "toast_wait": "잠시 기다려 주세요.\n키보드와 마우스를 사용하지 마세요.",
+
+            // Path validation
+            "duplicate_path_msg": "경로 \"%@\"은(는) 이 그룹에 이미 존재합니다.",
 
             // Modern layout
             "select_tab_group": "탭 그룹을 선택하세요",
@@ -359,6 +374,11 @@ final class Localization {
 
             // Toast
             "opening_tabs": "正在開啟分頁...",
+            "toast_progress": "正在開啟分頁... (%d/%d)",
+            "toast_wait": "請稍候。\n請勿使用鍵盤或滑鼠。",
+
+            // Path validation
+            "duplicate_path_msg": "路徑「%@」已存在於此群組中。",
 
             // Modern layout
             "select_tab_group": "請選擇分頁群組",
@@ -437,6 +457,11 @@ final class Localization {
 
             // Toast
             "opening_tabs": "正在打开标签页...",
+            "toast_progress": "正在打开标签页... (%d/%d)",
+            "toast_wait": "请稍候。\n请勿使用键盘或鼠标。",
+
+            // Path validation
+            "duplicate_path_msg": "路径「%@」已存在于此组中。",
 
             // Modern layout
             "select_tab_group": "请选择标签页组",

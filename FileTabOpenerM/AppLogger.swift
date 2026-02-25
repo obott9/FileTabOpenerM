@@ -83,15 +83,26 @@ final class AppLogger {
         }
     }
 
+    private let maxBackups = 3
+
     private func rotateIfNeeded() {
         guard let attrs = try? FileManager.default.attributesOfItem(atPath: logURL.path),
               let size = attrs[.size] as? Int,
               size > maxLogSize else { return }
 
-        let backupURL = logURL.deletingLastPathComponent()
-            .appendingPathComponent("app.log.1")
-        try? FileManager.default.removeItem(at: backupURL)
-        try? FileManager.default.moveItem(at: logURL, to: backupURL)
+        let dir = logURL.deletingLastPathComponent()
+        // 古いバックアップから順に削除・リネーム (3 → 削除, 2 → 3, 1 → 2)
+        for i in stride(from: maxBackups, through: 1, by: -1) {
+            let backup = dir.appendingPathComponent("app.log.\(i)")
+            if i == maxBackups {
+                try? FileManager.default.removeItem(at: backup)
+            } else {
+                let next = dir.appendingPathComponent("app.log.\(i + 1)")
+                try? FileManager.default.moveItem(at: backup, to: next)
+            }
+        }
+        let backup1 = dir.appendingPathComponent("app.log.1")
+        try? FileManager.default.moveItem(at: logURL, to: backup1)
     }
 }
 

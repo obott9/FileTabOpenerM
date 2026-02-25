@@ -28,6 +28,9 @@ enum FinderTabResult {
 final class FinderTabController: ObservableObject {
 
     @Published private(set) var isOpening = false
+    @Published private(set) var openingCurrent = 0
+    @Published private(set) var openingTotal = 0
+    @Published private(set) var openingPath = ""
 
     // MARK: - AX キャッシュ (タブ操作ループ中に再利用)
 
@@ -348,7 +351,15 @@ final class FinderTabController: ObservableObject {
         }
 
         isOpening = true
-        defer { isOpening = false }
+        openingTotal = paths.count
+        openingCurrent = 0
+        openingPath = ""
+        defer {
+            isOpening = false
+            openingCurrent = 0
+            openingTotal = 0
+            openingPath = ""
+        }
 
         // 新しいウィンドウを開くのでキャッシュをクリア
         clearCaches()
@@ -391,6 +402,8 @@ final class FinderTabController: ObservableObject {
         logInfo("Finder activated")
 
         // 常に新規 Finder ウィンドウを作成 (既存ウィンドウは流用しない)
+        openingCurrent = 1
+        openingPath = validPaths[0]
         logInfo("Creating new Finder window with: \(validPaths[0])")
         if !createFinderWindow(validPaths[0]) {
             logError("Failed to create Finder window")
@@ -450,6 +463,8 @@ final class FinderTabController: ObservableObject {
         // 2番目以降: 新規タブ + パス設定
         let tabTimeout = timeout
         for (i, path) in validPaths.dropFirst().enumerated() {
+            openingCurrent = i + 2
+            openingPath = path
             logInfo("Opening tab \(i + 2)/\(validPaths.count): \(path)")
             guard let btn = findNewTabButton(appRef) else {
                 logError("New Tab button not found for: \(path)")
