@@ -69,7 +69,7 @@ struct HistoryEntry: Identifiable, Codable, Equatable {
         self.path = path
         self.pinned = pinned
         self.lastUsed = Date()
-        self.useCount = 1
+        self.useCount = 0
     }
 
     init(from decoder: Decoder) throws {
@@ -78,7 +78,7 @@ struct HistoryEntry: Identifiable, Codable, Equatable {
         path = try c.decode(String.self, forKey: .path)
         pinned = try c.decodeIfPresent(Bool.self, forKey: .pinned) ?? false
         lastUsed = try c.decode(Date.self, forKey: .lastUsed)
-        useCount = try c.decodeIfPresent(Int.self, forKey: .useCount) ?? 1
+        useCount = try c.decodeIfPresent(Int.self, forKey: .useCount) ?? 0
     }
 }
 
@@ -103,8 +103,9 @@ struct AppSettings: Codable, Equatable {
 
 /// アプリ全体の設定データ
 struct AppConfig: Codable {
+    var configVersion: Int = 1
     var tabGroups: [TabGroup] = []
     var history: [HistoryEntry] = []
     var settings: AppSettings = AppSettings()
-    var windowGeometry: String = "600x400"
+    var windowGeometry: String = "800x600"
 }

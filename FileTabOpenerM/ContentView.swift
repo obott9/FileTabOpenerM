@@ -206,12 +206,12 @@ struct ContentView: View {
             if finderController.isOpening {
                 VStack(spacing: 8) {
                     if finderController.openingTotal > 0 {
-                        Text(L("toast_progress")
+                        Text(L("toast.progress")
                             .localized(finderController.openingCurrent)
                             .localized(finderController.openingTotal))
                             .font(.body.bold())
                     } else {
-                        Text(L("opening_tabs"))
+                        Text(L("toast.opening"))
                             .font(.body.bold())
                     }
                     if !finderController.openingPath.isEmpty {
@@ -221,7 +221,7 @@ struct ContentView: View {
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
-                    Text(L("toast_wait"))
+                    Text(L("toast.wait"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -234,6 +234,16 @@ struct ContentView: View {
             }
         }
         .onAppear { loadInitialState() }
+        // S6: Keyboard shortcut receivers
+        .onReceive(NotificationCenter.default.publisher(for: .addTabGroup)) { _ in
+            addTabGroup()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .deleteTabGroup)) { _ in
+            deleteSelectedGroup()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openTabs)) { _ in
+            openTabs()
+        }
     }
 
     // MARK: - Settings Bar
@@ -248,7 +258,7 @@ struct ContentView: View {
             .frame(width: 140)
 
             Spacer()
-            Text(L("timeout")).font(.body)
+            Text(L("settings.timeout")).font(.body)
             Picker("", selection: $configManager.config.settings.timeout) {
                 ForEach([5, 10, 15, 30, 60], id: \.self) { val in
                     Text("\(val)").tag(val)
@@ -260,7 +270,7 @@ struct ContentView: View {
                 logInfo("Timeout changed to \(newVal)s")
                 configManager.save()
             }
-            Text(L("seconds")).font(.body)
+            Text(L("settings.seconds")).font(.body)
 
             Text("\u{1F310}")
             Picker("", selection: $configManager.config.settings.language) {
@@ -284,25 +294,30 @@ struct ContentView: View {
 
     private var historySection: some View {
         HStack {
-            Text(L("history")).font(.body)
+            Text(L("history.label")).font(.body)
 
-            TextField(L("enter_path_or_drop"), text: $historyText)
+            TextField(L("history.placeholder"), text: $historyText)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityLabel("History path input")
                 .onDrop(of: [.fileURL], isTargeted: nil) { providers in
                     handleFileDropToHistory(providers)
                 }
 
             Button("\u{25BC}") { showHistoryDropdown.toggle() }
+                .accessibilityLabel("Show history dropdown")
                 .popover(isPresented: $showHistoryDropdown) {
                     historyDropdownContent
                 }
 
-            Button(L("open_in_finder")) { openSingleFolder() }
+            Button(L("history.open")) { openSingleFolder() }
                 .buttonStyle(CTkButtonStyle())
+                .accessibilityLabel("Open folder in Finder")
             Button("\u{1F4CC}") { toggleHistoryPin() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("clear")) { clearHistory() }
+                .accessibilityLabel("Toggle pin")
+            Button(L("history.clear")) { clearHistory() }
                 .buttonStyle(CTkButtonStyle())
+                .accessibilityLabel("Clear history")
         }
     }
 
@@ -310,7 +325,7 @@ struct ContentView: View {
         let sorted = configManager.sortedHistory()
         return VStack(spacing: 0) {
             if sorted.isEmpty {
-                Text(L("no_history"))
+                Text(L("history.empty"))
                     .foregroundStyle(.secondary)
                     .padding()
             } else {
@@ -371,13 +386,13 @@ struct ContentView: View {
 
     private var tabManagementBar: some View {
         HStack(spacing: 4) {
-            Button(L("add_tab_btn")) { addTabGroup() }
+            Button(L("tab.add_btn")) { addTabGroup() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("delete_tab_btn")) { deleteSelectedGroup() }
+            Button(L("tab.delete_btn")) { deleteSelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("rename")) { renameSelectedGroup() }
+            Button(L("tab.rename")) { renameSelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
-            Button(L("copy_tab_btn")) { copySelectedGroup() }
+            Button(L("tab.copy_btn")) { copySelectedGroup() }
                 .buttonStyle(CTkButtonStyle())
 
             Spacer().frame(width: 10)
@@ -430,27 +445,31 @@ struct ContentView: View {
             TextField("", text: $geomX)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 70)
+                .accessibilityLabel("Window X position")
                 .onSubmit { saveGeometry() }
 
             Text("Y:").font(.body)
             TextField("", text: $geomY)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 70)
+                .accessibilityLabel("Window Y position")
                 .onSubmit { saveGeometry() }
 
             Text("W:").font(.body)
             TextField("", text: $geomW)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 70)
+                .accessibilityLabel("Window width")
                 .onSubmit { saveGeometry() }
 
             Text("H:").font(.body)
             TextField("", text: $geomH)
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 70)
+                .accessibilityLabel("Window height")
                 .onSubmit { saveGeometry() }
 
-            Button(L("get_from_finder")) { getFinderBounds() }
+            Button(L("geometry.get")) { getFinderBounds() }
                 .buttonStyle(CTkButtonStyle())
 
             Spacer()
@@ -467,19 +486,19 @@ struct ContentView: View {
 
             // アクションボタン (右)
             VStack(spacing: 4) {
-                Button(L("move_up")) { movePathUp() }
+                Button(L("path.move_up")) { movePathUp() }
                     .buttonStyle(CTkButtonStyle())
                     .frame(width: 90)
-                Button(L("move_down")) { movePathDown() }
+                Button(L("path.move_down")) { movePathDown() }
                     .buttonStyle(CTkButtonStyle())
                     .frame(width: 90)
-                Button(L("add_path")) { addPathFromEntry() }
+                Button(L("path.add")) { addPathFromEntry() }
                     .buttonStyle(CTkButtonStyle())
                     .frame(width: 90)
-                Button(L("remove_path")) { removeSelectedPath() }
+                Button(L("path.remove")) { removeSelectedPath() }
                     .buttonStyle(CTkButtonStyle())
                     .frame(width: 90)
-                Button(L("browse")) { browseFolder() }
+                Button(L("path.browse")) { browseFolder() }
                     .buttonStyle(CTkButtonStyle())
                     .frame(width: 90)
             }
@@ -525,7 +544,7 @@ struct ContentView: View {
                             .truncationMode(.middle)
                             .tag(offset)
                             .contextMenu {
-                                Button(L("delete"), role: .destructive) {
+                                Button(L("tab.delete"), role: .destructive) {
                                     deletePath(at: offset, in: gi)
                                 }
                             }
@@ -554,8 +573,9 @@ struct ContentView: View {
     // MARK: - Path Entry
 
     private var pathEntrySection: some View {
-        TextField(L("enter_folder_path"), text: $newPath)
+        TextField(L("path.placeholder"), text: $newPath)
             .textFieldStyle(.roundedBorder)
+            .accessibilityLabel("Folder path input")
             .onSubmit { addPathFromEntry() }
             .onDrop(of: [.fileURL], isTargeted: nil) { providers in
                 handleFileDrop(providers)
@@ -573,7 +593,7 @@ struct ContentView: View {
         return Button(action: { openTabs() }) {
             HStack {
                 Image(systemName: "macwindow.badge.plus")
-                Text(L("open_as_tabs"))
+                Text(L("action.open_tabs"))
             }
             .font(.body)
             .foregroundColor(isDisabled ? PythonTheme.buttonText.opacity(0.5) : PythonTheme.buttonText)
@@ -586,6 +606,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .disabled(isDisabled)
+        .accessibilityLabel("Open all paths as Finder tabs")
     }
 
     // MARK: - Modern Tab Group Section (サイドバー方式)
@@ -609,10 +630,10 @@ struct ContentView: View {
                     Text(group.name)
                         .tag(group.id)
                         .contextMenu {
-                            Button(L("rename")) { renameSelectedGroup() }
-                            Button(L("copy")) { copySelectedGroup() }
+                            Button(L("tab.rename")) { renameSelectedGroup() }
+                            Button(L("tab.copy")) { copySelectedGroup() }
                             Divider()
-                            Button(L("delete"), role: .destructive) { deleteSelectedGroup() }
+                            Button(L("tab.delete"), role: .destructive) { deleteSelectedGroup() }
                         }
                 }
                 .onMove { from, to in
@@ -631,7 +652,7 @@ struct ContentView: View {
             Divider()
 
             HStack {
-                TextField(L("new_group_name"), text: $newGroupName)
+                TextField(L("modern.new_group"), text: $newGroupName)
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { addGroupFromTextField() }
 
@@ -650,7 +671,7 @@ struct ContentView: View {
             if let gi = selectedGroupIndex {
                 VStack(spacing: 0) {
                     // グループ名 (インライン編集)
-                    TextField(L("new_group_name"), text: $configManager.config.tabGroups[gi].name)
+                    TextField(L("modern.new_group"), text: $configManager.config.tabGroups[gi].name)
                         .textFieldStyle(.roundedBorder)
                         .font(.headline)
                         .onChange(of: configManager.config.tabGroups[gi].name) { _, _ in
@@ -673,14 +694,14 @@ struct ContentView: View {
 
                     // パス入力 + 参照
                     HStack {
-                        TextField(L("enter_folder_path"), text: $newPath)
+                        TextField(L("path.placeholder"), text: $newPath)
                             .textFieldStyle(.roundedBorder)
                             .onSubmit { addPathFromEntry() }
                             .onDrop(of: [.fileURL], isTargeted: nil) { providers in
                                 handleFileDrop(providers)
                             }
 
-                        Button(L("add")) { addPathFromEntry() }
+                        Button(L("tab.add")) { addPathFromEntry() }
                             .buttonStyle(CTkButtonStyle())
                             .disabled(newPath.trimmingCharacters(in: .whitespaces).isEmpty)
 
@@ -704,7 +725,7 @@ struct ContentView: View {
                     Image(systemName: "sidebar.left")
                         .font(.system(size: 48))
                         .foregroundStyle(.tertiary)
-                    Text(L("select_tab_group"))
+                    Text(L("modern.select_group"))
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -761,7 +782,7 @@ struct ContentView: View {
         let name = newGroupName.trimmingCharacters(in: .whitespaces)
         guard !name.isEmpty else { return }
         if configManager.config.tabGroups.contains(where: { $0.name == name }) {
-            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(name))
+            showAlert(title: L("dialog.duplicate"), message: L("dialog.duplicate_msg").localized(name))
             return
         }
         configManager.addTabGroup(name: name)
@@ -781,12 +802,12 @@ struct ContentView: View {
 
     private func addTabGroup() {
         guard let name = showInputDialog(
-            title: L("add_tab"),
-            message: L("enter_new_tab_name"),
+            title: L("dialog.add_tab"),
+            message: L("dialog.enter_tab_name"),
             defaultValue: "Tab \(configManager.config.tabGroups.count + 1)"
         ) else { return }
         if configManager.config.tabGroups.contains(where: { $0.name == name }) {
-            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(name))
+            showAlert(title: L("dialog.duplicate"), message: L("dialog.duplicate_msg").localized(name))
             return
         }
         configManager.addTabGroup(name: name)
@@ -799,8 +820,8 @@ struct ContentView: View {
               let index = selectedGroupIndex else { return }
         let name = configManager.config.tabGroups[index].name
         guard showConfirmDialog(
-            title: L("delete_confirm"),
-            message: L("delete_confirm_msg").localized(name)
+            title: L("dialog.delete_title"),
+            message: L("dialog.delete_msg").localized(name)
         ) else { return }
 
         let groups = configManager.config.tabGroups
@@ -822,13 +843,13 @@ struct ContentView: View {
         guard let index = selectedGroupIndex else { return }
         let oldName = configManager.config.tabGroups[index].name
         guard let newName = showInputDialog(
-            title: L("rename_tab"),
-            message: L("enter_new_name"),
+            title: L("dialog.rename"),
+            message: L("dialog.enter_name"),
             defaultValue: oldName
         ) else { return }
         if newName == oldName { return }
         if configManager.config.tabGroups.contains(where: { $0.name == newName }) {
-            showAlert(title: L("duplicate"), message: L("duplicate_msg").localized(newName))
+            showAlert(title: L("dialog.duplicate"), message: L("dialog.duplicate_msg").localized(newName))
             return
         }
         logInfo("Tab group renamed: \(oldName) -> \(newName)")
@@ -869,14 +890,14 @@ struct ContentView: View {
         // 存在確認
         if !FileManager.default.fileExists(atPath: expanded) {
             logWarning("Path not found: \(expanded)")
-            showAlert(title: L("error"), message: L("path_not_found").localized(expanded))
+            showAlert(title: L("error.title"), message: L("error.path_not_found").localized(expanded))
             return
         }
 
         // 重複チェック
         if configManager.config.tabGroups[gi].paths.contains(expanded) {
             logWarning("Duplicate path: \(expanded)")
-            showAlert(title: L("warning"), message: L("duplicate_path_msg").localized(expanded))
+            showAlert(title: L("error.warning"), message: L("error.duplicate_path").localized(expanded))
             return
         }
 
@@ -944,7 +965,7 @@ struct ContentView: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.message = L("enter_folder_path")
+        panel.message = L("path.placeholder")
         if panel.runModal() == .OK, let url = panel.urls.first {
             newPath = url.path
             logInfo("Folder selected via browse: \(url.path)")
@@ -995,18 +1016,28 @@ struct ContentView: View {
 
     private func saveGeometry() {
         guard let gi = selectedGroupIndex else { return }
-        configManager.config.tabGroups[gi].windowX = Int(geomX)
-        configManager.config.tabGroups[gi].windowY = Int(geomY)
-        configManager.config.tabGroups[gi].windowWidth = clampMin(Int(geomW), 528)
-        configManager.config.tabGroups[gi].windowHeight = clampMin(Int(geomH), 308)
+        // Screen bounds for validation
+        let screenW = Int(NSScreen.main?.frame.width ?? 3840)
+        let screenH = Int(NSScreen.main?.frame.height ?? 2160)
+        let maxW = screenW * 2   // multi-monitor support
+        let maxH = screenH * 2
+
+        configManager.config.tabGroups[gi].windowX = clampRange(Int(geomX), -screenW, screenW)
+        configManager.config.tabGroups[gi].windowY = clampRange(Int(geomY), -screenH, screenH)
+        configManager.config.tabGroups[gi].windowWidth = clampRange(Int(geomW), 528, maxW)
+        configManager.config.tabGroups[gi].windowHeight = clampRange(Int(geomH), 308, maxH)
+        // Reflect clamped values back to text fields
+        if let x = configManager.config.tabGroups[gi].windowX { geomX = String(x) }
+        if let y = configManager.config.tabGroups[gi].windowY { geomY = String(y) }
         if let w = configManager.config.tabGroups[gi].windowWidth { geomW = String(w) }
         if let h = configManager.config.tabGroups[gi].windowHeight { geomH = String(h) }
         configManager.save()
     }
 
-    private func clampMin(_ value: Int?, _ minimum: Int) -> Int? {
+    /// Clamp a value to [min, max]. Returns nil if value is nil (empty field).
+    private func clampRange(_ value: Int?, _ minimum: Int, _ maximum: Int) -> Int? {
         guard let v = value else { return nil }
-        return max(v, minimum)
+        return max(minimum, min(v, maximum))
     }
 
     private func getFinderBounds() {
@@ -1019,7 +1050,7 @@ struct ContentView: View {
         guard let result = appleScript?.executeAndReturnError(&error),
               result.numberOfItems == 4 else {
             logError("Failed to get Finder bounds: \(error ?? [:])")
-            showAlert(title: L("error"), message: L("no_finder_window"))
+            showAlert(title: L("error.title"), message: L("error.no_finder_window"))
             return
         }
         let x1 = Int(result.atIndex(1)?.int32Value ?? 0)
@@ -1042,7 +1073,7 @@ struct ContentView: View {
         let expanded = NSString(string: path).expandingTildeInPath
         guard FileManager.default.fileExists(atPath: expanded) else {
             logWarning("Path not found: \(expanded)")
-            showAlert(title: L("error"), message: L("path_not_found").localized(path))
+            showAlert(title: L("error.title"), message: L("error.path_not_found").localized(path))
             return
         }
         logInfo("Opening single folder: \(expanded)")
@@ -1063,8 +1094,8 @@ struct ContentView: View {
 
     private func clearHistory() {
         guard showConfirmDialog(
-            title: L("clear_history"),
-            message: L("clear_history_msg")
+            title: L("dialog.clear_history"),
+            message: L("dialog.clear_history_msg")
         ) else { return }
         configManager.clearHistory(keepPinned: true)
     }
@@ -1099,21 +1130,21 @@ struct ContentView: View {
                 configManager.addHistory(path: path)
             }
             showAlert(
-                title: L("warning"),
-                message: L("success_count").localized(opened, failed)
+                title: L("error.warning"),
+                message: L("error.success_count").localized(opened, failed)
             )
         case .noFinderWindow:
-            showAlert(title: L("error"), message: L("no_finder_window"))
+            showAlert(title: L("error.title"), message: L("error.no_finder_window"))
         case .noTabBar:
-            showAlert(title: L("error"), message: L("tab_bar_hidden"))
+            showAlert(title: L("error.title"), message: L("error.tab_bar_hidden"))
         case .accessibilityDenied:
             showAccessibilityDialog()
         case .invalidPaths(let invalid, let validResult):
             // 無効パスを警告表示
             let invalidList = invalid.joined(separator: "\n")
             showAlert(
-                title: L("warning"),
-                message: L("invalid_paths_msg").localized(String(invalid.count)) + "\n\n" + invalidList
+                title: L("error.warning"),
+                message: L("error.invalid_paths").localized(String(invalid.count)) + "\n\n" + invalidList
             )
             // 有効パス分の結果も処理
             handleTabResult(validResult, paths: paths)
@@ -1126,8 +1157,8 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: L("ok"))
-        alert.addButton(withTitle: L("cancel"))
+        alert.addButton(withTitle: L("dialog.ok"))
+        alert.addButton(withTitle: L("dialog.cancel"))
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.stringValue = defaultValue
         alert.accessoryView = field
@@ -1141,8 +1172,8 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: L("yes"))
-        alert.addButton(withTitle: L("no"))
+        alert.addButton(withTitle: L("dialog.yes"))
+        alert.addButton(withTitle: L("dialog.no"))
         return alert.runModal() == .alertFirstButtonReturn
     }
 
@@ -1150,7 +1181,7 @@ struct ContentView: View {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = message
-        alert.addButton(withTitle: L("ok"))
+        alert.addButton(withTitle: L("dialog.ok"))
         alert.runModal()
     }
 
@@ -1160,10 +1191,10 @@ struct ContentView: View {
         logInfo("Showing accessibility permission dialog")
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = L("accessibility_dialog_title")
-        alert.informativeText = L("accessibility_dialog_message")
-        alert.addButton(withTitle: L("open_system_settings"))
-        alert.addButton(withTitle: L("cancel"))
+        alert.messageText = L("accessibility.title")
+        alert.informativeText = L("accessibility.message")
+        alert.addButton(withTitle: L("accessibility.open_settings"))
+        alert.addButton(withTitle: L("dialog.cancel"))
 
         if alert.runModal() == .alertFirstButtonReturn {
             logInfo("User chose to open System Settings")

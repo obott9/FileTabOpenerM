@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+// S6: Keyboard shortcut notifications
+extension Notification.Name {
+    static let addTabGroup = Notification.Name("addTabGroup")
+    static let deleteTabGroup = Notification.Name("deleteTabGroup")
+    static let openTabs = Notification.Name("openTabs")
+}
+
 @main
 struct FileTabOpenerMApp: App {
 
@@ -17,6 +24,27 @@ struct FileTabOpenerMApp: App {
             ContentView()
         }
         .defaultSize(width: 800, height: 600)
+        .commands {
+            // S6: Keyboard shortcuts (⌘N, ⌘Delete, ⌘O)
+            CommandGroup(after: .newItem) {
+                Button(L("dialog.add_tab")) {
+                    NotificationCenter.default.post(name: .addTabGroup, object: nil)
+                }
+                .keyboardShortcut("n", modifiers: .command)
+
+                Button(L("tab.delete")) {
+                    NotificationCenter.default.post(name: .deleteTabGroup, object: nil)
+                }
+                .keyboardShortcut(.delete, modifiers: .command)
+
+                Divider()
+
+                Button(L("action.open_tabs")) {
+                    NotificationCenter.default.post(name: .openTabs, object: nil)
+                }
+                .keyboardShortcut("o", modifiers: .command)
+            }
+        }
     }
 }
 

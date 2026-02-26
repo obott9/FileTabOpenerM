@@ -3,6 +3,7 @@
 //
 // 多言語対応 (i18n)
 // 対応言語: en, ja, ko, zh_TW, zh_CN
+// キー命名規則: ドット記法 (セクション.項目)
 
 import Foundation
 
@@ -55,417 +56,407 @@ final class Localization {
     private let translations: [String: [String: String]] = [
         "en": [
             // Settings bar
-            "timeout": "Timeout",
-            "seconds": "sec",
+            "settings.timeout": "Timeout",
+            "settings.seconds": "sec",
 
             // History
-            "history": "History:",
-            "enter_path_or_drop": "Enter path or drop",
-            "open_in_finder": "Open in Finder",
-            "clear": "Clear",
-            "no_history": "No history",
+            "history.label": "History:",
+            "history.placeholder": "Enter path or drop",
+            "history.open": "Open in Finder",
+            "history.clear": "Clear",
+            "history.empty": "No history",
 
             // Tab management (shared / Modern context menu)
-            "add": "Add",
-            "delete": "Delete",
-            "rename": "Rename",
-            "copy": "Copy",
+            "tab.add": "Add",
+            "tab.delete": "Delete",
+            "tab.rename": "Rename",
+            "tab.copy": "Copy",
 
             // Tab management (Classic buttons — Python版準拠)
-            "add_tab_btn": "+ Add Tab",
-            "delete_tab_btn": "x Delete Tab",
-            "copy_tab_btn": "Copy Tab",
+            "tab.add_btn": "+ Add Tab",
+            "tab.delete_btn": "x Delete Tab",
+            "tab.copy_btn": "Copy Tab",
 
             // Path list
-            "move_up": "\u{25B2} Up",
-            "move_down": "\u{25BC} Down",
-            "add_path": "+ Add Path",
-            "remove_path": "- Remove",
-            "browse": "Browse...",
-            "enter_folder_path": "Enter folder path",
+            "path.move_up": "\u{25B2} Up",
+            "path.move_down": "\u{25BC} Down",
+            "path.add": "+ Add Path",
+            "path.remove": "- Remove",
+            "path.browse": "Browse...",
+            "path.placeholder": "Enter folder path",
 
             // Geometry
-            "get_from_finder": "Get from Finder",
+            "geometry.get": "Get from Finder",
 
             // Open button
-            "open_as_tabs": "Open as Tabs",
+            "action.open_tabs": "Open as Tabs",
 
             // Dialogs
-            "add_tab": "Add Tab",
-            "enter_new_tab_name": "Enter new tab name:",
-            "delete_confirm": "Delete Confirmation",
-            "delete_confirm_msg": "Delete \"%@\"?",
-            "rename_tab": "Rename",
-            "enter_new_name": "Enter new name:",
-            "duplicate": "Duplicate",
-            "duplicate_msg": "\"%@\" already exists.",
-            "ok": "OK",
-            "cancel": "Cancel",
-            "yes": "Yes",
-            "no": "No",
+            "dialog.add_tab": "Add Tab",
+            "dialog.enter_tab_name": "Enter new tab name:",
+            "dialog.delete_title": "Delete Confirmation",
+            "dialog.delete_msg": "Delete \"%@\"?",
+            "dialog.rename": "Rename",
+            "dialog.enter_name": "Enter new name:",
+            "dialog.duplicate": "Duplicate",
+            "dialog.duplicate_msg": "\"%@\" already exists.",
+            "dialog.ok": "OK",
+            "dialog.cancel": "Cancel",
+            "dialog.yes": "Yes",
+            "dialog.no": "No",
 
             // History dialog
-            "clear_history": "Clear History",
-            "clear_history_msg": "Clear history? (Pinned items will be kept)",
+            "dialog.clear_history": "Clear History",
+            "dialog.clear_history_msg": "Clear history? (Pinned items will be kept)",
 
             // Errors
-            "error": "Error",
-            "warning": "Warning",
-            "path_not_found": "Path not found: %@",
-            "no_finder_window": "No Finder window found",
-            "tab_bar_hidden": "Tab bar is hidden (View \u{2192} Show Tab Bar)",
-            "accessibility_required": "Accessibility permission is required",
-            "success_count": "%d succeeded, %d failed",
-            "invalid_paths_msg": "%@ path(s) not found:",
+            "error.title": "Error",
+            "error.warning": "Warning",
+            "error.path_not_found": "Path not found: %@",
+            "error.no_finder_window": "No Finder window found",
+            "error.tab_bar_hidden": "Tab bar is hidden (View \u{2192} Show Tab Bar)",
+            "error.accessibility": "Accessibility permission is required",
+            "error.success_count": "%d succeeded, %d failed",
+            "error.invalid_paths": "%@ path(s) not found:",
+            "error.duplicate_path": "Path \"%@\" already exists in this group.",
 
             // Accessibility dialog
-            "accessibility_dialog_title": "Accessibility Permission Required",
-            "accessibility_dialog_message": "FileTabOpenerM needs Accessibility permission to create and control Finder tabs.\n\nAfter clicking the button below, enable FileTabOpenerM in:\nSystem Settings \u{2192} Privacy & Security \u{2192} Accessibility",
-            "open_system_settings": "Open System Settings",
+            "accessibility.title": "Accessibility Permission Required",
+            "accessibility.message": "FileTabOpenerM needs Accessibility permission to create and control Finder tabs.\n\nAfter clicking the button below, enable FileTabOpenerM in:\nSystem Settings \u{2192} Privacy & Security \u{2192} Accessibility",
+            "accessibility.open_settings": "Open System Settings",
 
             // Toast
-            "opening_tabs": "Opening tabs...",
-            "toast_progress": "Opening tabs... (%d/%d)",
-            "toast_wait": "Please wait.\nDo not use the keyboard or mouse.",
-
-            // Path validation
-            "duplicate_path_msg": "Path \"%@\" already exists in this group.",
+            "toast.opening": "Opening tabs...",
+            "toast.progress": "Opening tabs... (%d/%d)",
+            "toast.wait": "Please wait.\nDo not use the keyboard or mouse.",
 
             // Modern layout
-            "select_tab_group": "Select a tab group",
-            "new_group_name": "New group name",
+            "modern.select_group": "Select a tab group",
+            "modern.new_group": "New group name",
         ],
 
         "ja": [
             // Settings bar
-            "timeout": "タイムアウト",
-            "seconds": "秒",
+            "settings.timeout": "タイムアウト",
+            "settings.seconds": "秒",
 
             // History
-            "history": "履歴:",
-            "enter_path_or_drop": "パスを入力またはドロップ",
-            "open_in_finder": "Finderで開く",
-            "clear": "クリア",
-            "no_history": "履歴がありません",
+            "history.label": "履歴:",
+            "history.placeholder": "パスを入力またはドロップ",
+            "history.open": "Finderで開く",
+            "history.clear": "クリア",
+            "history.empty": "履歴がありません",
 
             // Tab management (shared / Modern context menu)
-            "add": "追加",
-            "delete": "削除",
-            "rename": "名前変更",
-            "copy": "コピー",
+            "tab.add": "追加",
+            "tab.delete": "削除",
+            "tab.rename": "名前変更",
+            "tab.copy": "コピー",
 
             // Tab management (Classic buttons — Python版準拠)
-            "add_tab_btn": "+ タブ追加",
-            "delete_tab_btn": "x タブ削除",
-            "copy_tab_btn": "タブ複製",
+            "tab.add_btn": "+ タブ追加",
+            "tab.delete_btn": "x タブ削除",
+            "tab.copy_btn": "タブ複製",
 
             // Path list
-            "move_up": "\u{25B2} 上へ",
-            "move_down": "\u{25BC} 下へ",
-            "add_path": "+ パス追加",
-            "remove_path": "- パス削除",
-            "browse": "参照...",
-            "enter_folder_path": "フォルダパスを入力",
+            "path.move_up": "\u{25B2} 上へ",
+            "path.move_down": "\u{25BC} 下へ",
+            "path.add": "+ パス追加",
+            "path.remove": "- パス削除",
+            "path.browse": "参照...",
+            "path.placeholder": "フォルダパスを入力",
 
             // Geometry
-            "get_from_finder": "Finderから取得",
+            "geometry.get": "Finderから取得",
 
             // Open button
-            "open_as_tabs": "タブで開く",
+            "action.open_tabs": "タブで開く",
 
             // Dialogs
-            "add_tab": "タブ追加",
-            "enter_new_tab_name": "新しいタブの名前を入力:",
-            "delete_confirm": "削除確認",
-            "delete_confirm_msg": "「%@」を削除しますか？",
-            "rename_tab": "名前変更",
-            "enter_new_name": "新しい名前を入力:",
-            "duplicate": "重複",
-            "duplicate_msg": "「%@」は既に存在します。",
-            "ok": "OK",
-            "cancel": "キャンセル",
-            "yes": "はい",
-            "no": "いいえ",
+            "dialog.add_tab": "タブ追加",
+            "dialog.enter_tab_name": "新しいタブの名前を入力:",
+            "dialog.delete_title": "削除確認",
+            "dialog.delete_msg": "「%@」を削除しますか？",
+            "dialog.rename": "名前変更",
+            "dialog.enter_name": "新しい名前を入力:",
+            "dialog.duplicate": "重複",
+            "dialog.duplicate_msg": "「%@」は既に存在します。",
+            "dialog.ok": "OK",
+            "dialog.cancel": "キャンセル",
+            "dialog.yes": "はい",
+            "dialog.no": "いいえ",
 
             // History dialog
-            "clear_history": "履歴クリア",
-            "clear_history_msg": "履歴をクリアしますか？（ピン留めは保持）",
+            "dialog.clear_history": "履歴クリア",
+            "dialog.clear_history_msg": "履歴をクリアしますか？（ピン留めは保持）",
 
             // Errors
-            "error": "エラー",
-            "warning": "警告",
-            "path_not_found": "パスが見つかりません: %@",
-            "no_finder_window": "Finderウィンドウが見つかりません",
-            "tab_bar_hidden": "タブバーが非表示です（表示→タブバーを表示）",
-            "accessibility_required": "アクセシビリティ権限が必要です",
-            "success_count": "%d 個成功, %d 個失敗",
-            "invalid_paths_msg": "%@ 件のパスが見つかりません:",
+            "error.title": "エラー",
+            "error.warning": "警告",
+            "error.path_not_found": "パスが見つかりません: %@",
+            "error.no_finder_window": "Finderウィンドウが見つかりません",
+            "error.tab_bar_hidden": "タブバーが非表示です（表示→タブバーを表示）",
+            "error.accessibility": "アクセシビリティ権限が必要です",
+            "error.success_count": "%d 個成功, %d 個失敗",
+            "error.invalid_paths": "%@ 件のパスが見つかりません:",
+            "error.duplicate_path": "パス「%@」はこのグループに既に存在します。",
 
             // Accessibility dialog
-            "accessibility_dialog_title": "アクセシビリティ権限が必要です",
-            "accessibility_dialog_message": "FileTabOpenerM が Finder のタブを作成・制御するには、アクセシビリティ権限が必要です。\n\n下のボタンをクリック後、以下で FileTabOpenerM を有効にしてください:\nシステム設定 \u{2192} プライバシーとセキュリティ \u{2192} アクセシビリティ",
-            "open_system_settings": "システム設定を開く",
+            "accessibility.title": "アクセシビリティ権限が必要です",
+            "accessibility.message": "FileTabOpenerM が Finder のタブを作成・制御するには、アクセシビリティ権限が必要です。\n\n下のボタンをクリック後、以下で FileTabOpenerM を有効にしてください:\nシステム設定 \u{2192} プライバシーとセキュリティ \u{2192} アクセシビリティ",
+            "accessibility.open_settings": "システム設定を開く",
 
             // Toast
-            "opening_tabs": "タブを開いています...",
-            "toast_progress": "タブを展開中... (%d/%d)",
-            "toast_wait": "しばらくお待ちください。\nキーボード・マウスを操作しないでください。",
-
-            // Path validation
-            "duplicate_path_msg": "パス「%@」はこのグループに既に存在します。",
+            "toast.opening": "タブを開いています...",
+            "toast.progress": "タブを展開中... (%d/%d)",
+            "toast.wait": "しばらくお待ちください。\nキーボード・マウスを操作しないでください。",
 
             // Modern layout
-            "select_tab_group": "タブグループを選択してください",
-            "new_group_name": "新規グループ名",
+            "modern.select_group": "タブグループを選択してください",
+            "modern.new_group": "新規グループ名",
         ],
 
         "ko": [
             // Settings bar
-            "timeout": "타임아웃",
-            "seconds": "초",
+            "settings.timeout": "타임아웃",
+            "settings.seconds": "초",
 
             // History
-            "history": "기록:",
-            "enter_path_or_drop": "경로 입력 또는 드롭",
-            "open_in_finder": "Finder에서 열기",
-            "clear": "지우기",
-            "no_history": "기록 없음",
+            "history.label": "기록:",
+            "history.placeholder": "경로 입력 또는 드롭",
+            "history.open": "Finder에서 열기",
+            "history.clear": "지우기",
+            "history.empty": "기록 없음",
 
             // Tab management (shared / Modern context menu)
-            "add": "추가",
-            "delete": "삭제",
-            "rename": "이름 변경",
-            "copy": "복사",
+            "tab.add": "추가",
+            "tab.delete": "삭제",
+            "tab.rename": "이름 변경",
+            "tab.copy": "복사",
 
             // Tab management (Classic buttons — Python版準拠)
-            "add_tab_btn": "+ 탭 추가",
-            "delete_tab_btn": "x 탭 삭제",
-            "copy_tab_btn": "탭 복사",
+            "tab.add_btn": "+ 탭 추가",
+            "tab.delete_btn": "x 탭 삭제",
+            "tab.copy_btn": "탭 복사",
 
             // Path list
-            "move_up": "\u{25B2} 위로",
-            "move_down": "\u{25BC} 아래로",
-            "add_path": "+ 경로 추가",
-            "remove_path": "- 경로 삭제",
-            "browse": "찾아보기...",
-            "enter_folder_path": "폴더 경로 입력",
+            "path.move_up": "\u{25B2} 위로",
+            "path.move_down": "\u{25BC} 아래로",
+            "path.add": "+ 경로 추가",
+            "path.remove": "- 경로 삭제",
+            "path.browse": "찾아보기...",
+            "path.placeholder": "폴더 경로 입력",
 
             // Geometry
-            "get_from_finder": "Finder에서 가져오기",
+            "geometry.get": "Finder에서 가져오기",
 
             // Open button
-            "open_as_tabs": "탭으로 열기",
+            "action.open_tabs": "탭으로 열기",
 
             // Dialogs
-            "add_tab": "탭 추가",
-            "enter_new_tab_name": "새 탭 이름 입력:",
-            "delete_confirm": "삭제 확인",
-            "delete_confirm_msg": "\"%@\"을(를) 삭제하시겠습니까?",
-            "rename_tab": "이름 변경",
-            "enter_new_name": "새 이름 입력:",
-            "duplicate": "중복",
-            "duplicate_msg": "\"%@\"이(가) 이미 존재합니다.",
-            "ok": "확인",
-            "cancel": "취소",
-            "yes": "예",
-            "no": "아니오",
+            "dialog.add_tab": "탭 추가",
+            "dialog.enter_tab_name": "새 탭 이름 입력:",
+            "dialog.delete_title": "삭제 확인",
+            "dialog.delete_msg": "\"%@\"을(를) 삭제하시겠습니까?",
+            "dialog.rename": "이름 변경",
+            "dialog.enter_name": "새 이름 입력:",
+            "dialog.duplicate": "중복",
+            "dialog.duplicate_msg": "\"%@\"이(가) 이미 존재합니다.",
+            "dialog.ok": "확인",
+            "dialog.cancel": "취소",
+            "dialog.yes": "예",
+            "dialog.no": "아니오",
 
             // History dialog
-            "clear_history": "기록 지우기",
-            "clear_history_msg": "기록을 지우시겠습니까? (고정된 항목은 유지)",
+            "dialog.clear_history": "기록 지우기",
+            "dialog.clear_history_msg": "기록을 지우시겠습니까? (고정된 항목은 유지)",
 
             // Errors
-            "error": "오류",
-            "warning": "경고",
-            "path_not_found": "경로를 찾을 수 없습니다: %@",
-            "no_finder_window": "Finder 창을 찾을 수 없습니다",
-            "tab_bar_hidden": "탭 바가 숨겨져 있습니다 (보기 \u{2192} 탭 바 보기)",
-            "accessibility_required": "접근성 권한이 필요합니다",
-            "success_count": "%d개 성공, %d개 실패",
-            "invalid_paths_msg": "%@개의 경로를 찾을 수 없습니다:",
+            "error.title": "오류",
+            "error.warning": "경고",
+            "error.path_not_found": "경로를 찾을 수 없습니다: %@",
+            "error.no_finder_window": "Finder 창을 찾을 수 없습니다",
+            "error.tab_bar_hidden": "탭 바가 숨겨져 있습니다 (보기 \u{2192} 탭 바 보기)",
+            "error.accessibility": "접근성 권한이 필요합니다",
+            "error.success_count": "%d개 성공, %d개 실패",
+            "error.invalid_paths": "%@개의 경로를 찾을 수 없습니다:",
+            "error.duplicate_path": "경로 \"%@\"은(는) 이 그룹에 이미 존재합니다.",
 
             // Accessibility dialog
-            "accessibility_dialog_title": "접근성 권한이 필요합니다",
-            "accessibility_dialog_message": "FileTabOpenerM이 Finder 탭을 생성하고 제어하려면 접근성 권한이 필요합니다.\n\n아래 버튼을 클릭한 후 다음에서 FileTabOpenerM을 활성화하세요:\n시스템 설정 \u{2192} 개인정보 보호 및 보안 \u{2192} 접근성",
-            "open_system_settings": "시스템 설정 열기",
+            "accessibility.title": "접근성 권한이 필요합니다",
+            "accessibility.message": "FileTabOpenerM이 Finder 탭을 생성하고 제어하려면 접근성 권한이 필요합니다.\n\n아래 버튼을 클릭한 후 다음에서 FileTabOpenerM을 활성화하세요:\n시스템 설정 \u{2192} 개인정보 보호 및 보안 \u{2192} 접근성",
+            "accessibility.open_settings": "시스템 설정 열기",
 
             // Toast
-            "opening_tabs": "탭을 여는 중...",
-            "toast_progress": "탭 열는 중... (%d/%d)",
-            "toast_wait": "잠시 기다려 주세요.\n키보드와 마우스를 사용하지 마세요.",
-
-            // Path validation
-            "duplicate_path_msg": "경로 \"%@\"은(는) 이 그룹에 이미 존재합니다.",
+            "toast.opening": "탭을 여는 중...",
+            "toast.progress": "탭 열는 중... (%d/%d)",
+            "toast.wait": "잠시 기다려 주세요.\n키보드와 마우스를 사용하지 마세요.",
 
             // Modern layout
-            "select_tab_group": "탭 그룹을 선택하세요",
-            "new_group_name": "새 그룹 이름",
+            "modern.select_group": "탭 그룹을 선택하세요",
+            "modern.new_group": "새 그룹 이름",
         ],
 
         "zh_TW": [
             // Settings bar
-            "timeout": "逾時",
-            "seconds": "秒",
+            "settings.timeout": "逾時",
+            "settings.seconds": "秒",
 
             // History
-            "history": "歷史:",
-            "enter_path_or_drop": "輸入路徑或拖放",
-            "open_in_finder": "在 Finder 中開啟",
-            "clear": "清除",
-            "no_history": "無歷史記錄",
+            "history.label": "歷史:",
+            "history.placeholder": "輸入路徑或拖放",
+            "history.open": "在 Finder 中開啟",
+            "history.clear": "清除",
+            "history.empty": "無歷史記錄",
 
             // Tab management (shared / Modern context menu)
-            "add": "新增",
-            "delete": "刪除",
-            "rename": "重新命名",
-            "copy": "複製",
+            "tab.add": "新增",
+            "tab.delete": "刪除",
+            "tab.rename": "重新命名",
+            "tab.copy": "複製",
 
             // Tab management (Classic buttons — Python版準拠)
-            "add_tab_btn": "+ 新增分頁",
-            "delete_tab_btn": "x 刪除分頁",
-            "copy_tab_btn": "複製分頁",
+            "tab.add_btn": "+ 新增分頁",
+            "tab.delete_btn": "x 刪除分頁",
+            "tab.copy_btn": "複製分頁",
 
             // Path list
-            "move_up": "\u{25B2} 上移",
-            "move_down": "\u{25BC} 下移",
-            "add_path": "+ 新增路徑",
-            "remove_path": "- 移除路徑",
-            "browse": "瀏覽...",
-            "enter_folder_path": "輸入資料夾路徑",
+            "path.move_up": "\u{25B2} 上移",
+            "path.move_down": "\u{25BC} 下移",
+            "path.add": "+ 新增路徑",
+            "path.remove": "- 移除路徑",
+            "path.browse": "瀏覽...",
+            "path.placeholder": "輸入資料夾路徑",
 
             // Geometry
-            "get_from_finder": "從 Finder 取得",
+            "geometry.get": "從 Finder 取得",
 
             // Open button
-            "open_as_tabs": "以分頁開啟",
+            "action.open_tabs": "以分頁開啟",
 
             // Dialogs
-            "add_tab": "新增分頁",
-            "enter_new_tab_name": "輸入新分頁名稱:",
-            "delete_confirm": "刪除確認",
-            "delete_confirm_msg": "確定要刪除「%@」嗎？",
-            "rename_tab": "重新命名",
-            "enter_new_name": "輸入新名稱:",
-            "duplicate": "重複",
-            "duplicate_msg": "「%@」已經存在。",
-            "ok": "確定",
-            "cancel": "取消",
-            "yes": "是",
-            "no": "否",
+            "dialog.add_tab": "新增分頁",
+            "dialog.enter_tab_name": "輸入新分頁名稱:",
+            "dialog.delete_title": "刪除確認",
+            "dialog.delete_msg": "確定要刪除「%@」嗎？",
+            "dialog.rename": "重新命名",
+            "dialog.enter_name": "輸入新名稱:",
+            "dialog.duplicate": "重複",
+            "dialog.duplicate_msg": "「%@」已經存在。",
+            "dialog.ok": "確定",
+            "dialog.cancel": "取消",
+            "dialog.yes": "是",
+            "dialog.no": "否",
 
             // History dialog
-            "clear_history": "清除歷史",
-            "clear_history_msg": "確定要清除歷史嗎？（釘選項目將保留）",
+            "dialog.clear_history": "清除歷史",
+            "dialog.clear_history_msg": "確定要清除歷史嗎？（釘選項目將保留）",
 
             // Errors
-            "error": "錯誤",
-            "warning": "警告",
-            "path_not_found": "找不到路徑: %@",
-            "no_finder_window": "找不到 Finder 視窗",
-            "tab_bar_hidden": "分頁列已隱藏（顯示 \u{2192} 顯示分頁列）",
-            "accessibility_required": "需要輔助使用權限",
-            "success_count": "%d 個成功, %d 個失敗",
-            "invalid_paths_msg": "找不到 %@ 個路徑:",
+            "error.title": "錯誤",
+            "error.warning": "警告",
+            "error.path_not_found": "找不到路徑: %@",
+            "error.no_finder_window": "找不到 Finder 視窗",
+            "error.tab_bar_hidden": "分頁列已隱藏（顯示 \u{2192} 顯示分頁列）",
+            "error.accessibility": "需要輔助使用權限",
+            "error.success_count": "%d 個成功, %d 個失敗",
+            "error.invalid_paths": "找不到 %@ 個路徑:",
+            "error.duplicate_path": "路徑「%@」已存在於此群組中。",
 
             // Accessibility dialog
-            "accessibility_dialog_title": "需要輔助使用權限",
-            "accessibility_dialog_message": "FileTabOpenerM 需要輔助使用權限來建立和控制 Finder 分頁。\n\n點擊下方按鈕後，請在以下位置啟用 FileTabOpenerM:\n系統設定 \u{2192} 隱私權與安全性 \u{2192} 輔助使用",
-            "open_system_settings": "開啟系統設定",
+            "accessibility.title": "需要輔助使用權限",
+            "accessibility.message": "FileTabOpenerM 需要輔助使用權限來建立和控制 Finder 分頁。\n\n點擊下方按鈕後，請在以下位置啟用 FileTabOpenerM:\n系統設定 \u{2192} 隱私權與安全性 \u{2192} 輔助使用",
+            "accessibility.open_settings": "開啟系統設定",
 
             // Toast
-            "opening_tabs": "正在開啟分頁...",
-            "toast_progress": "正在開啟分頁... (%d/%d)",
-            "toast_wait": "請稍候。\n請勿使用鍵盤或滑鼠。",
-
-            // Path validation
-            "duplicate_path_msg": "路徑「%@」已存在於此群組中。",
+            "toast.opening": "正在開啟分頁...",
+            "toast.progress": "正在開啟分頁... (%d/%d)",
+            "toast.wait": "請稍候。\n請勿使用鍵盤或滑鼠。",
 
             // Modern layout
-            "select_tab_group": "請選擇分頁群組",
-            "new_group_name": "新群組名稱",
+            "modern.select_group": "請選擇分頁群組",
+            "modern.new_group": "新群組名稱",
         ],
 
         "zh_CN": [
             // Settings bar
-            "timeout": "超时",
-            "seconds": "秒",
+            "settings.timeout": "超时",
+            "settings.seconds": "秒",
 
             // History
-            "history": "历史:",
-            "enter_path_or_drop": "输入路径或拖放",
-            "open_in_finder": "在 Finder 中打开",
-            "clear": "清除",
-            "no_history": "无历史记录",
+            "history.label": "历史:",
+            "history.placeholder": "输入路径或拖放",
+            "history.open": "在 Finder 中打开",
+            "history.clear": "清除",
+            "history.empty": "无历史记录",
 
             // Tab management (shared / Modern context menu)
-            "add": "添加",
-            "delete": "删除",
-            "rename": "重命名",
-            "copy": "复制",
+            "tab.add": "添加",
+            "tab.delete": "删除",
+            "tab.rename": "重命名",
+            "tab.copy": "复制",
 
             // Tab management (Classic buttons — Python版準拠)
-            "add_tab_btn": "+ 添加标签",
-            "delete_tab_btn": "x 删除标签",
-            "copy_tab_btn": "复制标签",
+            "tab.add_btn": "+ 添加标签",
+            "tab.delete_btn": "x 删除标签",
+            "tab.copy_btn": "复制标签",
 
             // Path list
-            "move_up": "\u{25B2} 上移",
-            "move_down": "\u{25BC} 下移",
-            "add_path": "+ 添加路径",
-            "remove_path": "- 删除路径",
-            "browse": "浏览...",
-            "enter_folder_path": "输入文件夹路径",
+            "path.move_up": "\u{25B2} 上移",
+            "path.move_down": "\u{25BC} 下移",
+            "path.add": "+ 添加路径",
+            "path.remove": "- 删除路径",
+            "path.browse": "浏览...",
+            "path.placeholder": "输入文件夹路径",
 
             // Geometry
-            "get_from_finder": "从 Finder 获取",
+            "geometry.get": "从 Finder 获取",
 
             // Open button
-            "open_as_tabs": "以标签页打开",
+            "action.open_tabs": "以标签页打开",
 
             // Dialogs
-            "add_tab": "添加标签页",
-            "enter_new_tab_name": "输入新标签页名称:",
-            "delete_confirm": "删除确认",
-            "delete_confirm_msg": "确定要删除\u{201C}%@\u{201D}吗？",
-            "rename_tab": "重命名",
-            "enter_new_name": "输入新名称:",
-            "duplicate": "重复",
-            "duplicate_msg": "\u{201C}%@\u{201D}已经存在。",
-            "ok": "确定",
-            "cancel": "取消",
-            "yes": "是",
-            "no": "否",
+            "dialog.add_tab": "添加标签页",
+            "dialog.enter_tab_name": "输入新标签页名称:",
+            "dialog.delete_title": "删除确认",
+            "dialog.delete_msg": "确定要删除\u{201C}%@\u{201D}吗？",
+            "dialog.rename": "重命名",
+            "dialog.enter_name": "输入新名称:",
+            "dialog.duplicate": "重复",
+            "dialog.duplicate_msg": "\u{201C}%@\u{201D}已经存在。",
+            "dialog.ok": "确定",
+            "dialog.cancel": "取消",
+            "dialog.yes": "是",
+            "dialog.no": "否",
 
             // History dialog
-            "clear_history": "清除历史",
-            "clear_history_msg": "确定要清除历史吗？（固定项目将保留）",
+            "dialog.clear_history": "清除历史",
+            "dialog.clear_history_msg": "确定要清除历史吗？（固定项目将保留）",
 
             // Errors
-            "error": "错误",
-            "warning": "警告",
-            "path_not_found": "找不到路径: %@",
-            "no_finder_window": "找不到 Finder 窗口",
-            "tab_bar_hidden": "标签栏已隐藏（显示 \u{2192} 显示标签栏）",
-            "accessibility_required": "需要辅助功能权限",
-            "success_count": "%d 个成功, %d 个失败",
-            "invalid_paths_msg": "找不到 %@ 个路径:",
+            "error.title": "错误",
+            "error.warning": "警告",
+            "error.path_not_found": "找不到路径: %@",
+            "error.no_finder_window": "找不到 Finder 窗口",
+            "error.tab_bar_hidden": "标签栏已隐藏（显示 \u{2192} 显示标签栏）",
+            "error.accessibility": "需要辅助功能权限",
+            "error.success_count": "%d 个成功, %d 个失败",
+            "error.invalid_paths": "找不到 %@ 个路径:",
+            "error.duplicate_path": "路径「%@」已存在于此组中。",
 
             // Accessibility dialog
-            "accessibility_dialog_title": "需要辅助功能权限",
-            "accessibility_dialog_message": "FileTabOpenerM 需要辅助功能权限来创建和控制 Finder 标签页。\n\n点击下方按钮后，请在以下位置启用 FileTabOpenerM:\n系统设置 \u{2192} 隐私与安全性 \u{2192} 辅助功能",
-            "open_system_settings": "打开系统设置",
+            "accessibility.title": "需要辅助功能权限",
+            "accessibility.message": "FileTabOpenerM 需要辅助功能权限来创建和控制 Finder 标签页。\n\n点击下方按钮后，请在以下位置启用 FileTabOpenerM:\n系统设置 \u{2192} 隐私与安全性 \u{2192} 辅助功能",
+            "accessibility.open_settings": "打开系统设置",
 
             // Toast
-            "opening_tabs": "正在打开标签页...",
-            "toast_progress": "正在打开标签页... (%d/%d)",
-            "toast_wait": "请稍候。\n请勿使用键盘或鼠标。",
-
-            // Path validation
-            "duplicate_path_msg": "路径「%@」已存在于此组中。",
+            "toast.opening": "正在打开标签页...",
+            "toast.progress": "正在打开标签页... (%d/%d)",
+            "toast.wait": "请稍候。\n请勿使用键盘或鼠标。",
 
             // Modern layout
-            "select_tab_group": "请选择标签页组",
-            "new_group_name": "新组名称",
+            "modern.select_group": "请选择标签页组",
+            "modern.new_group": "新组名称",
         ],
     ]
 }
