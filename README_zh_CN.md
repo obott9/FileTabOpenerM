@@ -73,14 +73,21 @@
 
 ```
 FileTabOpenerM/
-  FileTabOpenerMApp.swift       # 应用入口点、窗口位置保存与恢复
-  ContentView.swift             # 主界面（经典与现代布局）
-  FinderTabController.swift     # AX API + AppleScript Finder 标签页控制
-  ConfigManager.swift           # JSON 配置管理
-  TabGroup.swift                # 数据模型（Codable、Python 版兼容）
-  Localization.swift            # 多语言支持（5 种语言、53 个键值）
-  AppLogger.swift               # 文件日志记录器（3 世代轮转）
-  Assets.xcassets/              # 应用图标与颜色资源
+  FileTabOpenerMApp.swift             # 应用入口点、窗口位置保存与恢复
+  ContentView.swift                   # 主界面、共享视图、状态属性
+  ContentView+ClassicLayout.swift     # 经典布局（Python 版兼容）
+  ContentView+ModernLayout.swift      # 现代布局（侧边栏＋详情面板）
+  ContentView+Actions.swift           # 全部操作方法（标签页/路径/历史管理）
+  Theme.swift                         # 颜色主题、按钮样式
+  FlowLayout.swift                    # 标签按钮换行布局
+  FinderTabController.swift           # AX API + AppleScript Finder 标签页控制
+  ConfigManager.swift                 # JSON 配置管理
+  TabGroup.swift                      # 数据模型（Codable、Python 版兼容）
+  Localization.swift                  # 多语言支持（5 种语言、53 个键值）
+  AppLogger.swift                     # 文件日志记录器（3 世代轮转）
+  Assets.xcassets/                    # 应用图标与颜色资源
+FileTabOpenerMTests/
+  FileTabOpenerMTests.swift           # 单元测试 25 项（Codable、i18n、辅助方法）
 ```
 
 ## 许可证

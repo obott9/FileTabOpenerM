@@ -73,14 +73,21 @@ Log files are rotated when exceeding 1 MB, with up to 3 backup generations (`app
 
 ```
 FileTabOpenerM/
-  FileTabOpenerMApp.swift       # App entry point, window geometry save/restore
-  ContentView.swift             # Main UI (Classic & Modern layouts)
-  FinderTabController.swift     # AX API + AppleScript Finder tab control
-  ConfigManager.swift           # JSON configuration management
-  TabGroup.swift                # Data model (Codable, Python-compatible)
-  Localization.swift            # i18n (5 languages, 53 keys)
-  AppLogger.swift               # File logger with 3-generation rotation
-  Assets.xcassets/              # App icon and color assets
+  FileTabOpenerMApp.swift             # App entry point, window geometry save/restore
+  ContentView.swift                   # Main UI, shared views, state properties
+  ContentView+ClassicLayout.swift     # Classic layout (Python version compatible)
+  ContentView+ModernLayout.swift      # Modern layout (sidebar + detail panel)
+  ContentView+Actions.swift           # All action methods (tab/path/history management)
+  Theme.swift                         # Color theme, button styles
+  FlowLayout.swift                    # Flow layout for tab button wrapping
+  FinderTabController.swift           # AX API + AppleScript Finder tab control
+  ConfigManager.swift                 # JSON configuration management
+  TabGroup.swift                      # Data model (Codable, Python-compatible)
+  Localization.swift                  # i18n (5 languages, 53 keys)
+  AppLogger.swift                     # File logger with 3-generation rotation
+  Assets.xcassets/                    # App icon and color assets
+FileTabOpenerMTests/
+  FileTabOpenerMTests.swift           # 25 unit tests (Codable, i18n, helpers)
 ```
 
 ## License

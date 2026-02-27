@@ -73,14 +73,21 @@
 
 ```
 FileTabOpenerM/
-  FileTabOpenerMApp.swift       # アプリエントリポイント、ウィンドウジオメトリ保存・復元
-  ContentView.swift             # メインUI（クラシック・モダン両レイアウト）
-  FinderTabController.swift     # AX API + AppleScript による Finder タブ制御
-  ConfigManager.swift           # JSON 設定ファイル管理
-  TabGroup.swift                # データモデル（Codable、Python版互換）
-  Localization.swift            # 多言語対応（5言語、53キー）
-  AppLogger.swift               # ファイルロガー（3世代ローテーション）
-  Assets.xcassets/              # アプリアイコン・カラーアセット
+  FileTabOpenerMApp.swift             # アプリエントリポイント、ウィンドウジオメトリ保存・復元
+  ContentView.swift                   # メインUI、共有ビュー、状態プロパティ
+  ContentView+ClassicLayout.swift     # クラシックレイアウト（Python版準拠）
+  ContentView+ModernLayout.swift      # モダンレイアウト（サイドバー＋詳細パネル）
+  ContentView+Actions.swift           # 全アクションメソッド（タブ/パス/履歴管理）
+  Theme.swift                         # カラーテーマ、ボタンスタイル
+  FlowLayout.swift                    # タブボタン折り返しレイアウト
+  FinderTabController.swift           # AX API + AppleScript による Finder タブ制御
+  ConfigManager.swift                 # JSON 設定ファイル管理
+  TabGroup.swift                      # データモデル（Codable、Python版互換）
+  Localization.swift                  # 多言語対応（5言語、53キー）
+  AppLogger.swift                     # ファイルロガー（3世代ローテーション）
+  Assets.xcassets/                    # アプリアイコン・カラーアセット
+FileTabOpenerMTests/
+  FileTabOpenerMTests.swift           # ユニットテスト 25件（Codable、i18n、ヘルパー）
 ```
 
 ## ライセンス

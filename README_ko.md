@@ -73,14 +73,21 @@
 
 ```
 FileTabOpenerM/
-  FileTabOpenerMApp.swift       # 앱 진입점, 윈도우 위치 저장·복원
-  ContentView.swift             # 메인 UI (클래식·모던 레이아웃)
-  FinderTabController.swift     # AX API + AppleScript Finder 탭 제어
-  ConfigManager.swift           # JSON 설정 관리
-  TabGroup.swift                # 데이터 모델 (Codable, Python 버전 호환)
-  Localization.swift            # 다국어 지원 (5개 언어, 53개 키)
-  AppLogger.swift               # 파일 로거 (3세대 로테이션)
-  Assets.xcassets/              # 앱 아이콘·색상 에셋
+  FileTabOpenerMApp.swift             # 앱 진입점, 윈도우 위치 저장·복원
+  ContentView.swift                   # 메인 UI, 공유 뷰, 상태 프로퍼티
+  ContentView+ClassicLayout.swift     # 클래식 레이아웃 (Python 버전 호환)
+  ContentView+ModernLayout.swift      # 모던 레이아웃 (사이드바 + 상세 패널)
+  ContentView+Actions.swift           # 전체 액션 메서드 (탭/경로/히스토리 관리)
+  Theme.swift                         # 컬러 테마, 버튼 스타일
+  FlowLayout.swift                    # 탭 버튼 줄바꿈 레이아웃
+  FinderTabController.swift           # AX API + AppleScript Finder 탭 제어
+  ConfigManager.swift                 # JSON 설정 관리
+  TabGroup.swift                      # 데이터 모델 (Codable, Python 버전 호환)
+  Localization.swift                  # 다국어 지원 (5개 언어, 53개 키)
+  AppLogger.swift                     # 파일 로거 (3세대 로테이션)
+  Assets.xcassets/                    # 앱 아이콘·색상 에셋
+FileTabOpenerMTests/
+  FileTabOpenerMTests.swift           # 유닛 테스트 25건 (Codable, i18n, 헬퍼)
 ```
 
 ## 라이선스
