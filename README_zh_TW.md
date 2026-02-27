@@ -4,20 +4,26 @@
 
 用於將資料夾以 Finder 分頁方式批次開啟的 macOS 原生 SwiftUI 應用程式。
 
-本應用是 [file_tab_opener](https://github.com/obott9/file_tab_opener)（Python/Tk 版）的 macOS 原生版本，使用 SwiftUI 與 Accessibility API 實現快速且穩定的 Finder 分頁控制。
+本應用是 [file_tab_opener](https://github.com/obott9/file_tab_opener)（Python/Tk 版）的 macOS 原生版本，使用 SwiftUI 打造現代化的 macOS 原生 UI 體驗。
 
 ## 功能
 
 - **分頁群組管理** - 建立、重新命名、複製、刪除及重新排序分頁群組
 - **一鍵開啟** - 將分頁群組中的所有資料夾以單一 Finder 視窗的分頁形式開啟
-- **經典 / 現代佈局** - 可在傳統按鈕式佈局與現代側邊欄＋詳細面板佈局之間切換
+- **現代佈局** - 側邊欄＋詳細面板、下拉式排序、右鍵選單、行內編輯 — 同時提供 Python 版相容的經典佈局
+- **macOS 原生體驗** - 深色模式、拖放操作、系統字型渲染 — 全部自動遵循 macOS 慣例
 - **資料夾歷史** - 最近開啟的資料夾記錄（支援釘選）
 - **視窗位置記憶** - 按分頁群組儲存及還原 Finder 視窗的位置與大小
-- **高速分頁控制** - AX API + AppleScript 混合模式（10 個分頁約 3 秒內開啟）
-- **深色模式** - 自動跟隨 macOS 外觀設定
+- **穩定分頁控制** - AX API + AppleScript 混合模式；AX API 無需鍵盤模擬即可建立分頁，避免 System Events 權限問題
 - **多語言支援** - 英語、日語、韓語、繁體中文、簡體中文
 - **路徑驗證** - 新增時檢查路徑是否存在並防止重複
 - **拖放操作** - 將資料夾拖放至路徑輸入欄位即可新增
+
+## 為何選擇原生版？
+
+Python/Tk 版使用 `System Events` 按鍵模擬（⌘T）建立 Finder 分頁，這需要鍵盤模擬權限，且可能與使用者輸入衝突。原生版改用 **Accessibility API**（AX API）以程式化方式按下 Finder 的「新增分頁」按鈕，完全不使用鍵盤事件。
+
+分頁開啟速度與 Python 版相當（10 個分頁約 3 秒）。原生版的主要優勢在於 **基於 SwiftUI 的現代佈局**：側邊欄導覽、下拉式排序、右鍵選單、原生拖放操作、自動深色模式 — 這些功能在 Tk/customtkinter 中難以實現。
 
 ## 系統需求
 
@@ -43,7 +49,7 @@
 
 本應用採用混合模式控制 Finder 分頁：
 
-1. **AX API**（Accessibility API） - 透過程式化方式按下 Finder 的「新增分頁」按鈕建立新分頁。使用快取的 AXUIElement 參考及輕量子元素計數輪詢確保效能。
+1. **AX API**（Accessibility API） - 透過程式化方式按下 Finder 的「新增分頁」按鈕建立新分頁，完全排除鍵盤模擬。
 2. **AppleScript** - 透過 `set target of front Finder window` 設定各分頁的路徑。使用預編譯的 NSAppleScript 處理程序呼叫，避免重複編譯的額外開銷。
 3. **備援機制** - 分頁建立失敗時，將剩餘路徑以獨立 Finder 視窗開啟。
 

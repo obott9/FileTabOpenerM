@@ -4,20 +4,26 @@
 
 A native SwiftUI application for managing and opening folders as Finder tabs on macOS.
 
-This is the macOS-native version of [file_tab_opener](https://github.com/obott9/file_tab_opener) (Python/Tk), built with SwiftUI and Accessibility API for fast, reliable Finder tab control.
+This is the macOS-native version of [file_tab_opener](https://github.com/obott9/file_tab_opener) (Python/Tk), rebuilt with SwiftUI for a modern macOS-native UI experience.
 
 ## Features
 
 - **Tab Group Management** - Create, rename, copy, delete, and reorder tab groups
 - **One-Click Open** - Open all folders in a tab group as Finder tabs in a single window
-- **Classic / Modern Layout** - Toggle between a traditional button-based layout and a modern sidebar + detail panel layout
+- **Modern Layout** - Sidebar + detail panel with dropdown-based reordering, context menus, and inline editing — alongside a Classic layout compatible with the Python version
+- **Native macOS Experience** - Dark mode, drag & drop, system font rendering — all following macOS conventions automatically
 - **Folder History** - Recently opened folders with pin support
 - **Window Geometry** - Save and restore Finder window position/size per tab group
-- **Fast Tab Control** - AX API + AppleScript hybrid approach (opens 10 tabs in ~3 seconds)
-- **Dark Mode** - Follows macOS appearance automatically
+- **Reliable Tab Control** - AX API + AppleScript hybrid approach; AX API creates tabs without keyboard simulation, avoiding System Events permission issues
 - **Internationalization** - English, Japanese, Korean, Traditional/Simplified Chinese
 - **Path Validation** - Checks path existence and prevents duplicates on add
 - **Drag & Drop** - Drop folders onto the path entry field to add paths
+
+## Why Native Version?
+
+The Python/Tk version uses `System Events` keystroke (⌘T) to create Finder tabs, which requires keyboard simulation permission and can conflict with user input. The native version replaces this with **Accessibility API** (AX API), pressing Finder's "New Tab" button programmatically — no keyboard events involved.
+
+Tab opening speed is comparable to the Python version (~3 seconds for 10 tabs). The main advantage of the native version is the **SwiftUI-based Modern layout**: sidebar navigation, dropdown reordering, context menus, native drag & drop, and automatic dark mode — features that are difficult to achieve with Tk/customtkinter.
 
 ## Requirements
 
@@ -43,11 +49,11 @@ This is the macOS-native version of [file_tab_opener](https://github.com/obott9/
 
 The application uses a hybrid approach to control Finder tabs:
 
-1. **AX API** (Accessibility API) - Creates new tabs by programmatically pressing Finder's "New Tab" button. Uses cached AXUIElement references and lightweight child-count polling for performance.
+1. **AX API** (Accessibility API) - Creates new tabs by programmatically pressing Finder's "New Tab" button, eliminating keyboard simulation entirely.
 2. **AppleScript** - Sets the target path of each new tab via `set target of front Finder window`. Uses pre-compiled NSAppleScript with handler calls to avoid repeated compilation.
 3. **Fallback** - If tab creation fails, opens remaining paths as separate Finder windows.
 
-Tab readiness is detected by monitoring AXUIElement child count changes rather than fixed-delay polling, enabling reliable operation across different Mac hardware speeds.
+Tab readiness is detected by monitoring AXUIElement child count changes rather than fixed-delay polling, enabling reliable operation across different Mac hardware.
 
 ## Configuration
 
