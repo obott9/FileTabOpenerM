@@ -107,6 +107,10 @@ FileTabOpenerMTests/
   FileTabOpenerMTests.swift           # 单元测试 25 项（Codable、i18n、辅助方法）
 ```
 
+## 作者
+
+[obott9](https://github.com/obott9)
+
 ## 许可证
 
 [MIT License](LICENSE)

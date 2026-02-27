@@ -107,6 +107,10 @@ FileTabOpenerMTests/
   FileTabOpenerMTests.swift           # 25 unit tests (Codable, i18n, helpers)
 ```
 
+## Author
+
+[obott9](https://github.com/obott9)
+
 ## License
 
 [MIT License](LICENSE)

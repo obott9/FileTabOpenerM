@@ -107,6 +107,10 @@ FileTabOpenerMTests/
   FileTabOpenerMTests.swift           # 유닛 테스트 25건 (Codable, i18n, 헬퍼)
 ```
 
+## 작성자
+
+[obott9](https://github.com/obott9)
+
 ## 라이선스
 
 [MIT License](LICENSE)
