@@ -278,10 +278,8 @@ final class FinderTabController: ObservableObject {
             logError("Cannot access Finder menu bar")
             return false
         }
-        guard let menuBar = menuBarRef as? AXUIElement else {
-            logError("Menu bar is not AXUIElement")
-            return false
-        }
+        // CFTypeRef → AXUIElement (CoreFoundation type, cast always succeeds)
+        let menuBar = menuBarRef as! AXUIElement
 
         let menuItems = axChildren(menuBar)
         // 「表示」メニューを探す (通常4番目: Finder, File, Edit, View)

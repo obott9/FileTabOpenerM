@@ -19,6 +19,12 @@
 - **路徑驗證** - 新增時檢查路徑是否存在並防止重複
 - **拖放操作** - 將資料夾拖放至路徑輸入欄位即可新增
 
+## 截圖
+
+| 經典佈局 | 現代佈局 |
+|:-:|:-:|
+| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+
 ## 為何選擇原生版？
 
 Python/Tk 版使用 `System Events` 按鍵模擬（⌘T）建立 Finder 分頁，這需要鍵盤模擬權限，且可能與使用者輸入衝突。原生版改用 **Accessibility API**（AX API）以程式化方式按下 Finder 的「新增分頁」按鈕，完全不使用鍵盤事件。

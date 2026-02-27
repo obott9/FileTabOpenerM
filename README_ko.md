@@ -19,6 +19,12 @@
 - **경로 검증** - 추가 시 경로 존재 확인 및 중복 검사
 - **드래그 앤 드롭** - 경로 입력 필드에 폴더를 드롭하여 추가
 
+## 스크린샷
+
+| 클래식 레이아웃 | 모던 레이아웃 |
+|:-:|:-:|
+| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+
 ## 왜 네이티브 버전인가?
 
 Python/Tk 버전은 `System Events` 키스트로크(⌘T)로 Finder 탭을 생성하며, 이는 키보드 시뮬레이션 권한이 필요하고 사용자 입력과 충돌할 수 있습니다. 네이티브 버전은 **Accessibility API**(AX API)로 Finder의 "새 탭" 버튼을 프로그래밍 방식으로 눌러 키보드 이벤트를 사용하지 않습니다.

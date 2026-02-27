@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
+### Added
+- **Docs**: Screenshots (Classic/Modern layout) in README
+
+### Fixed
+- **Code**: Fix `as? AXUIElement` conditional downcast warning in `showTabBar()` (CoreFoundation type always succeeds)
+
 ## [1.0.0] - 2026-02-27
 
 Initial release of File Tab Opener (macOS Native).

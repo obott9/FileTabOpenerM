@@ -19,6 +19,12 @@
 - **路径验证** - 添加时检查路径是否存在并防止重复
 - **拖放操作** - 将文件夹拖放至路径输入栏即可添加
 
+## 截图
+
+| 经典布局 | 现代布局 |
+|:-:|:-:|
+| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+
 ## 为何选择原生版？
 
 Python/Tk 版使用 `System Events` 按键模拟（⌘T）创建 Finder 标签页，这需要键盘模拟权限，且可能与用户输入冲突。原生版改用 **Accessibility API**（AX API）以编程方式按下 Finder 的"新建标签页"按钮，完全不使用键盘事件。

@@ -19,6 +19,12 @@ This is the macOS-native version of [file_tab_opener](https://github.com/obott9/
 - **Path Validation** - Checks path existence and prevents duplicates on add
 - **Drag & Drop** - Drop folders onto the path entry field to add paths
 
+## Screenshots
+
+| Classic Layout | Modern Layout |
+|:-:|:-:|
+| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+
 ## Why Native Version?
 
 The Python/Tk version uses `System Events` keystroke (⌘T) to create Finder tabs, which requires keyboard simulation permission and can conflict with user input. The native version replaces this with **Accessibility API** (AX API), pressing Finder's "New Tab" button programmatically — no keyboard events involved.
