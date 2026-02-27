@@ -1,0 +1,121 @@
+# FileTabOpenerM リリース手順
+
+## ビルド環境
+
+- macOS 14.0 以降
+- Xcode 15.0 以降
+
+## リリースビルド作成
+
+### 1. バージョン番号を更新
+
+`FileTabOpenerM.xcodeproj/project.pbxproj` 内の `MARKETING_VERSION` を全箇所（6箇所）更新する。
+
+### 2. アーカイブビルド
+
+```bash
+cd ~/Documents/_Programing/XCode/FileTabOpenerM
+xcodebuild archive \
+  -project FileTabOpenerM.xcodeproj \
+  -scheme FileTabOpenerM \
+  -archivePath build/release/FileTabOpenerM.xcarchive
+```
+
+### 3. ZIPファイル作成
+
+`FileTabOpenerM/` フォルダに .app と README を同梱してZIP化する。
+
+```bash
+cd build/release
+rm -rf FileTabOpenerM
+mkdir FileTabOpenerM
+
+# アプリをコピー
+cp -R FileTabOpenerM.xcarchive/Products/Applications/FileTabOpenerM.app FileTabOpenerM/
+
+# READMEをコピー
+cp ../../dist/README.txt FileTabOpenerM/
+cp ../../dist/README_EN.txt FileTabOpenerM/
+cp ../../dist/README_ko.txt FileTabOpenerM/
+cp ../../dist/README_zh-CN.txt FileTabOpenerM/
+cp ../../dist/README_zh-TW.txt FileTabOpenerM/
+
+# ZIPを作成
+zip -r FileTabOpenerM_vX.X.X.zip FileTabOpenerM
+rm -rf FileTabOpenerM
+```
+
+### 4. gitタグ作成・push
+
+```bash
+git tag vX.X.X
+git push origin vX.X.X
+git push origin main
+```
+
+### 5. GitHub Releaseを作成
+
+```bash
+gh release create vX.X.X \
+  --draft \
+  --title "vX.X.X" \
+  --notes "リリースノート（5言語）"
+
+gh release upload vX.X.X build/release/FileTabOpenerM_vX.X.X.zip
+```
+
+動作確認後にドラフトを公開：
+
+```bash
+gh release edit vX.X.X --draft=false
+```
+
+### リリースノートのフォーマット
+
+5言語（English / 日本語 / 한국어 / 简体中文 / 繁體中文）で記載する。
+過去のリリースを参考にすること: `gh release view vX.X.X`
+
+## ファイル構成
+
+```
+リポジトリ内（コミット対象）:
+  dist/
+    ├── RELEASE.md          # この手順書
+    ├── README.txt          # 配布用（日本語）
+    ├── README_EN.txt       # 配布用（English）
+    ├── README_ko.txt       # 配布用（한국어）
+    ├── README_zh-CN.txt    # 配布用（简体中文）
+    └── README_zh-TW.txt    # 配布用（繁體中文）
+
+作業用（.gitignoreで除外）:
+  build/
+    └── release/
+        ├── FileTabOpenerM.xcarchive/
+        └── FileTabOpenerM_vX.X.X.zip
+
+GitHub Releases（最終配布先）:
+  └── FileTabOpenerM_vX.X.X.zip
+```
+
+## README.txt 必須記載事項
+
+同梱するREADMEには以下を必ず記載すること：
+
+- **ソフトの概要** - アプリの利用目的・機能
+- **作者への連絡先** - メールアドレス、GitHub等（作者に管理権限があること）
+- **取り扱い種別** - フリーソフト/シェアウェア等
+- **動作環境** - macOSバージョン、必要な権限
+- **インストール方法** - 手順を明記
+- **アンインストール方法** - ファイル削除のみでも必ず記載
+
+## リリースチェックリスト
+
+- [ ] バージョン番号を更新（project.pbxproj の MARKETING_VERSION 6箇所）
+- [ ] CHANGELOG.md の [Unreleased] を新バージョンに変更
+- [ ] Release構成でアーカイブビルド
+- [ ] アプリが正常に起動するか確認
+- [ ] dist/README.txt の内容が最新か確認
+- [ ] dist/README.txt と README_EN.txt の動作環境がプロジェクト設定（MACOSX_DEPLOYMENT_TARGET）と一致しているか確認
+- [ ] gitタグを作成・push
+- [ ] GitHub Releasesにドラフト作成・ZIPアップロード
+- [ ] 動作確認後にドラフトを公開
