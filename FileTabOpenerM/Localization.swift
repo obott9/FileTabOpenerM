@@ -51,6 +51,22 @@ final class Localization {
         return key
     }
 
+    /// 指定言語でキーからローカライズ文字列を取得 (テスト用)
+    func string(for key: String, language: String) -> String {
+        if let table = translations[language], let value = table[key] {
+            return value
+        }
+        if let value = translations["en"]?[key] {
+            return value
+        }
+        return key
+    }
+
+    /// 指定言語の全キーを返す (テスト用)
+    func allKeys(for language: String) -> [String] {
+        translations[language].map { Array($0.keys) } ?? []
+    }
+
     // MARK: - 翻訳テーブル
 
     private let translations: [String: [String: String]] = [
