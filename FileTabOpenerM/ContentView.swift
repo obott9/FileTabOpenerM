@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  FileTabOpenerM
 //
-//  Created by 尾保手　秀樹 on 2026/02/24.
+//  Created by obott9 on 2026/02/24.
 //
 //  分割構成:
 //    Theme.swift                     — テーマ色定数, CTkButtonStyle, Color拡張
