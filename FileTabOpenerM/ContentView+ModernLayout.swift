@@ -5,6 +5,7 @@
 // ContentView.swift から分離
 
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension ContentView {
 
