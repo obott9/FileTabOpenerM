@@ -264,6 +264,42 @@ struct AppConfigCodableTests {
 
         #expect(dict["config_version"] as? Int == 2)
     }
+
+    /// config_version が無い既存 JSON でもデコードできること (Python版互換)
+    @Test func decodeMissingConfigVersion() throws {
+        let json = """
+        {
+            "tab_groups": [{ "name": "Work", "paths": ["/tmp"] }],
+            "history": [],
+            "settings": { "timeout": 15, "language": "ja" },
+            "window_geometry": "900x700"
+        }
+        """
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let config = try decoder.decode(AppConfig.self, from: Data(json.utf8))
+
+        #expect(config.configVersion == 1)  // デフォルト値
+        #expect(config.tabGroups.count == 1)
+        #expect(config.tabGroups[0].name == "Work")
+        #expect(config.settings.timeout == 15)
+        #expect(config.settings.language == "ja")
+        #expect(config.windowGeometry == "900x700")
+    }
+
+    /// 完全に空の JSON でもデコードできること
+    @Test func decodeEmptyJSON() throws {
+        let json = "{}"
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let config = try decoder.decode(AppConfig.self, from: Data(json.utf8))
+
+        #expect(config.configVersion == 1)
+        #expect(config.tabGroups.isEmpty)
+        #expect(config.history.isEmpty)
+        #expect(config.settings.timeout == 30)
+        #expect(config.windowGeometry == "800x600")
+    }
 }
 
 // MARK: - Localization テスト
