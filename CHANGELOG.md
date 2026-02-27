@@ -38,3 +38,6 @@ Native SwiftUI reimplementation of [file_tab_opener](https://github.com/obott9/f
 - **Accessibility**: Permission check dialog with system settings link on first launch
 - **Docs**: README in 5 languages, MIT License
 - **Tests**: 25 unit tests (Codable round-trip, Localization, String format helpers)
+
+[Unreleased]: https://github.com/obott9/FileTabOpenerM/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/obott9/FileTabOpenerM/releases/tag/v1.0.0

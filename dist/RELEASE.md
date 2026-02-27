@@ -108,12 +108,24 @@ GitHub Releases（最終配布先）:
 - **インストール方法** - 手順を明記
 - **アンインストール方法** - ファイル削除のみでも必ず記載
 
+## コード署名について
+
+このアプリは Apple Developer Program による公証（Notarization）を行っていない。
+初回起動時に macOS Gatekeeper がブロックする場合がある。
+
+回避方法:
+- アプリを右クリック →「開く」→ ダイアログで「開く」をクリック
+- または: `xattr -cr FileTabOpenerM.app`
+
+dist/README*.txt にもこの注意事項を記載済み。
+
 ## リリースチェックリスト
 
 - [ ] バージョン番号を更新（project.pbxproj の MARKETING_VERSION 6箇所）
-- [ ] CHANGELOG.md の [Unreleased] を新バージョンに変更
+- [ ] dist/README*.txt のバージョン番号を更新
+- [ ] CHANGELOG.md の [Unreleased] を新バージョンに変更、末尾の比較リンクも更新
 - [ ] Release構成でアーカイブビルド
-- [ ] アプリが正常に起動するか確認
+- [ ] アプリが正常に起動するか確認（Gatekeeper 回避手順も確認）
 - [ ] dist/README.txt の内容が最新か確認
 - [ ] dist/README.txt と README_EN.txt の動作環境がプロジェクト設定（MACOSX_DEPLOYMENT_TARGET）と一致しているか確認
 - [ ] gitタグを作成・push

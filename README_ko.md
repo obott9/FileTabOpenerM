@@ -25,10 +25,15 @@ Python/Tk 버전은 `System Events` 키스트로크(⌘T)로 Finder 탭을 생�
 
 탭 열기 속도는 Python 버전과 동등합니다(10개 탭에 약 3초). 네이티브 버전의 주요 이점은 **SwiftUI 기반 모던 레이아웃** — 사이드바 내비게이션, 드롭다운 정렬, 컨텍스트 메뉴, 네이티브 드래그 앤 드롭, 자동 다크 모드 — Tk/customtkinter로는 구현이 어려운 기능들입니다.
 
+## 다운로드
+
+최신 `.app`은 [GitHub Releases](https://github.com/obott9/FileTabOpenerM/releases)에서 다운로드할 수 있습니다.
+
+> **참고:** 이 앱은 공증(Notarization)되지 않았습니다. 첫 실행 시 macOS Gatekeeper가 차단할 수 있습니다. 앱을 우클릭 → "열기"를 선택하고 대화 상자에서 "열기"를 클릭하세요.
+
 ## 시스템 요구 사항
 
 - macOS 12 Monterey 이상
-- Xcode 15 이상 (소스에서 빌드하는 경우)
 - 손쉬운 사용 권한 (첫 실행 시 확인 대화 상자가 표시됩니다)
 
 ## 빌드

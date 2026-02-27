@@ -78,25 +78,20 @@ final class ConfigManager: ObservableObject {
             let data = try encoder.encode(config)
 
             // Atomic write: tmp → replaceItemAt (rename)
-            let tmpURL = configURL.deletingLastPathComponent()
-                .appendingPathComponent("config.tmp")
-            try data.write(to: tmpURL)
-            _ = try FileManager.default.replaceItemAt(configURL, withItemAt: tmpURL)
-            logInfo("Config saved")
-        } catch {
-            // Fallback: direct write if rename fails
-            logWarning("Atomic save failed, falling back to direct write: \(error)")
             do {
-                let encoder = JSONEncoder()
-                encoder.keyEncodingStrategy = .convertToSnakeCase
-                encoder.dateEncodingStrategy = .formatted(Self.dateFormatter)
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                let data = try encoder.encode(config)
+                let tmpURL = configURL.deletingLastPathComponent()
+                    .appendingPathComponent("config.tmp")
+                try data.write(to: tmpURL)
+                _ = try FileManager.default.replaceItemAt(configURL, withItemAt: tmpURL)
+                logInfo("Config saved")
+            } catch {
+                // Fallback: direct write if rename fails
+                logWarning("Atomic save failed, falling back to direct write: \(error)")
                 try data.write(to: configURL)
                 logInfo("Config saved (direct write)")
-            } catch {
-                logError("Config save error: \(error)")
             }
+        } catch {
+            logError("Config save error: \(error)")
         }
     }
 

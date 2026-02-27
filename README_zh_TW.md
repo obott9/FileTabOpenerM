@@ -25,10 +25,15 @@ Python/Tk 版使用 `System Events` 按鍵模擬（⌘T）建立 Finder 分頁�
 
 分頁開啟速度與 Python 版相當（10 個分頁約 3 秒）。原生版的主要優勢在於 **基於 SwiftUI 的現代佈局**：側邊欄導覽、下拉式排序、右鍵選單、原生拖放操作、自動深色模式 — 這些功能在 Tk/customtkinter 中難以實現。
 
+## 下載
+
+從 [GitHub Releases](https://github.com/obott9/FileTabOpenerM/releases) 下載最新的 `.app`。
+
+> **注意：** 此應用程式未經公證（Notarization）。首次啟動時 macOS Gatekeeper 可能會阻擋。請右鍵點擊應用程式 →「打開」，然後在對話框中點擊「打開」。
+
 ## 系統需求
 
 - macOS 12 Monterey 或更新版本
-- Xcode 15 或更新版本（從原始碼建置時需要）
 - 輔助使用權限（首次啟動時會提示授權）
 
 ## 建置

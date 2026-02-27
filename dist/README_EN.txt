@@ -2,6 +2,9 @@
 File Tab Opener (macOS) - Read Me
 =====================================
 
+[Version] 1.0.0
+[Type] Freeware
+
 [Overview]
 A native macOS application for managing and opening folders as Finder tabs.
 Group folders by project and open them all as Finder tabs with one click.

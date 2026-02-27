@@ -25,10 +25,15 @@ The Python/Tk version uses `System Events` keystroke (⌘T) to create Finder tab
 
 Tab opening speed is comparable to the Python version (~3 seconds for 10 tabs). The main advantage of the native version is the **SwiftUI-based Modern layout**: sidebar navigation, dropdown reordering, context menus, native drag & drop, and automatic dark mode — features that are difficult to achieve with Tk/customtkinter.
 
+## Download
+
+Download the latest `.app` from [GitHub Releases](https://github.com/obott9/FileTabOpenerM/releases).
+
+> **Note:** This app is not notarized. On first launch, macOS Gatekeeper may block it. Right-click the app and select "Open", then click "Open" in the dialog to bypass the warning.
+
 ## Requirements
 
 - macOS 12 Monterey or later
-- Xcode 15+ (for building from source)
 - Accessibility permission (prompted on first launch)
 
 ## Build

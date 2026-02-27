@@ -5,7 +5,6 @@
 // ContentView.swift から分離
 
 import SwiftUI
-import UniformTypeIdentifiers
 
 extension ContentView {
 
@@ -370,11 +369,10 @@ extension ContentView {
     /// FinderTabResult を処理して適切な UI フィードバックを表示
     func handleTabResult(_ result: FinderTabResult, paths: [String]) {
         switch result {
-        case .success(let count):
+        case .success:
             for path in paths {
                 configManager.addHistory(path: path)
             }
-            _ = count
         case .partialSuccess(let opened, let failed, _):
             for path in paths {
                 configManager.addHistory(path: path)

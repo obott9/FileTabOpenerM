@@ -38,11 +38,6 @@ struct TabGroup: Identifiable, Codable, Equatable {
         windowHeight = try c.decodeIfPresent(Int.self, forKey: .windowHeight)
     }
 
-    /// ウィンドウジオメトリが設定されているか
-    var hasWindowGeometry: Bool {
-        windowX != nil && windowY != nil && windowWidth != nil && windowHeight != nil
-    }
-
     /// NSRect に変換 (ジオメトリ未設定なら nil)
     var windowRect: NSRect? {
         guard let x = windowX, let y = windowY,

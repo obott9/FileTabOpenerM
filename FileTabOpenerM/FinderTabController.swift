@@ -278,7 +278,10 @@ final class FinderTabController: ObservableObject {
             logError("Cannot access Finder menu bar")
             return false
         }
-        let menuBar = menuBarRef as! AXUIElement
+        guard let menuBar = menuBarRef as? AXUIElement else {
+            logError("Menu bar is not AXUIElement")
+            return false
+        }
 
         let menuItems = axChildren(menuBar)
         // 「表示」メニューを探す (通常4番目: Finder, File, Edit, View)
@@ -365,7 +368,7 @@ final class FinderTabController: ObservableObject {
         clearCaches()
 
         // パス重複除去 (順序維持)
-        let deduplicated = Array(NSOrderedSet(array: paths)) as! [String]
+        let deduplicated = NSOrderedSet(array: paths).array.compactMap { $0 as? String }
         if deduplicated.count < paths.count {
             logInfo("\(paths.count - deduplicated.count) duplicate paths removed")
         }

@@ -25,10 +25,15 @@ Python/Tk 版使用 `System Events` 按键模拟（⌘T）创建 Finder 标签�
 
 标签页打开速度与 Python 版相当（10 个标签页约 3 秒）。原生版的主要优势在于 **基于 SwiftUI 的现代布局**：侧边栏导航、下拉排序、右键菜单、原生拖放操作、自动深色模式 — 这些功能在 Tk/customtkinter 中难以实现。
 
+## 下载
+
+从 [GitHub Releases](https://github.com/obott9/FileTabOpenerM/releases) 下载最新的 `.app`。
+
+> **注意：** 此应用未经公证（Notarization）。首次启动时 macOS Gatekeeper 可能会阻止运行。请右键点击应用 →"打开"，然后在对话框中点击"打开"。
+
 ## 系统要求
 
 - macOS 12 Monterey 或更高版本
-- Xcode 15 或更高版本（从源代码构建时需要）
 - 辅助功能权限（首次启动时会提示授权）
 
 ## 构建
