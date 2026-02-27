@@ -67,6 +67,31 @@ struct TabGroupCodableTests {
         #expect(group.windowRect == nil)
     }
 
+    /// JSON の null 値ジオメトリを nil としてデコードできること (Python版互換)
+    @Test func decodeNullGeometry() throws {
+        let json = """
+        {
+            "name": "485",
+            "paths": [],
+            "window_x": null,
+            "window_y": null,
+            "window_width": null,
+            "window_height": null
+        }
+        """
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let group = try decoder.decode(TabGroup.self, from: Data(json.utf8))
+
+        #expect(group.name == "485")
+        #expect(group.paths.isEmpty)
+        #expect(group.windowX == nil)
+        #expect(group.windowY == nil)
+        #expect(group.windowWidth == nil)
+        #expect(group.windowHeight == nil)
+        #expect(group.hasWindowGeometry == false)
+    }
+
     /// エンコード時に id が含まれないこと (Python版互換)
     @Test func encodeExcludesID() throws {
         let group = TabGroup(name: "Test", paths: ["/tmp"])
