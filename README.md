@@ -23,7 +23,7 @@ This is the macOS-native version of [file_tab_opener](https://github.com/obott9/
 
 | Classic Layout | Modern Layout |
 |:-:|:-:|
-| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+| ![Classic](docs/images/en_classic.png) | ![Modern](docs/images/en_modern.png) |
 
 ## Why Native Version?
 

@@ -23,7 +23,7 @@
 
 | 클래식 레이아웃 | 모던 레이아웃 |
 |:-:|:-:|
-| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+| ![Classic](docs/images/ko_classic.png) | ![Modern](docs/images/ko_modern.png) |
 
 ## 왜 네이티브 버전인가?
 

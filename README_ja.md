@@ -23,7 +23,7 @@
 
 | クラシックレイアウト | モダンレイアウト |
 |:-:|:-:|
-| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+| ![Classic](docs/images/ja_classic.png) | ![Modern](docs/images/ja_modern.png) |
 
 ## なぜネイティブ版？
 

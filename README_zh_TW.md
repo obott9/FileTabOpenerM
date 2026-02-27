@@ -23,7 +23,7 @@
 
 | 經典佈局 | 現代佈局 |
 |:-:|:-:|
-| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+| ![Classic](docs/images/zh_TW_classic.png) | ![Modern](docs/images/zh_TW_modern.png) |
 
 ## 為何選擇原生版？
 

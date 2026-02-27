@@ -23,7 +23,7 @@
 
 | 经典布局 | 现代布局 |
 |:-:|:-:|
-| ![Classic](docs/images/classic_layout.png) | ![Modern](docs/images/modern_layout.png) |
+| ![Classic](docs/images/zh_CN_classic.png) | ![Modern](docs/images/zh_CN_modern.png) |
 
 ## 为何选择原生版？
 

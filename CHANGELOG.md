@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
-### Added
-- **Docs**: Screenshots (Classic/Modern layout) in README
+### Changed
+- **Docs**: Screenshots per language — each README shows Classic/Modern in its own language (5 languages × 2 layouts = 10 screenshots)
 
 ### Fixed
 - **Code**: Fix `as? AXUIElement` conditional downcast warning in `showTabBar()` (CoreFoundation type always succeeds)
