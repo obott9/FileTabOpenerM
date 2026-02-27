@@ -108,4 +108,15 @@ struct AppConfig: Codable {
     var history: [HistoryEntry] = []
     var settings: AppSettings = AppSettings()
     var windowGeometry: String = "800x600"
+
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        configVersion = try c.decodeIfPresent(Int.self, forKey: .configVersion) ?? 1
+        tabGroups = try c.decodeIfPresent([TabGroup].self, forKey: .tabGroups) ?? []
+        history = try c.decodeIfPresent([HistoryEntry].self, forKey: .history) ?? []
+        settings = try c.decodeIfPresent(AppSettings.self, forKey: .settings) ?? AppSettings()
+        windowGeometry = try c.decodeIfPresent(String.self, forKey: .windowGeometry) ?? "800x600"
+    }
 }
