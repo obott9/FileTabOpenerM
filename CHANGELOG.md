@@ -6,13 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## [Unreleased]
 
-### Changed
-- **Docs**: Screenshots per language — each README shows Classic/Modern in its own language (5 languages × 2 layouts = 10 screenshots)
-
-### Fixed
-- **Code**: Fix `as? AXUIElement` conditional downcast warning in `showTabBar()` (CoreFoundation type always succeeds)
-
-## [1.0.0] - 2026-02-27
+## [1.0.0] - 2026-02-28
 
 Initial release of File Tab Opener (macOS Native).
 Native SwiftUI reimplementation of [file_tab_opener](https://github.com/obott9/file_tab_opener) (Python/Tk v1.1.3).
@@ -43,6 +37,7 @@ Native SwiftUI reimplementation of [file_tab_opener](https://github.com/obott9/f
 - **Logging**: Log rotation (1 MB threshold, 3 backup generations)
 - **Accessibility**: Permission check dialog with system settings link on first launch
 - **Docs**: README in 5 languages, MIT License
+- **Docs**: Screenshots per language — each README shows Classic/Modern in its own language (5 languages × 2 layouts = 10 screenshots)
 - **Tests**: 25 unit tests (Codable round-trip, Localization, String format helpers)
 
 [Unreleased]: https://github.com/obott9/FileTabOpenerM/compare/v1.0.0...HEAD
